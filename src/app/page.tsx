@@ -60,25 +60,27 @@ export default function Home() {
             One job: make the first shippable cut.
           </h2>
           <p className="mt-4 max-w-2xl text-[var(--ink)]/65">
-            MVP Specialist refuses platform fantasies. It forces a target user,
-            a core loop, non-goals, and a scaffold you can run tonight.
+            MVP Specialist is trained on industries that actually need MVPs —
+            HealthTech, FinTech, EdTech, PropTech, e‑commerce, logistics, B2B SaaS,
+            local services, LegalTech, and climate. Each playbook teaches winning
+            shapes, constraints, and how to rewrite empire ideas.
           </p>
           <ol className="mt-12 grid gap-10 sm:grid-cols-3">
             {[
               {
                 n: "01",
-                t: "Frame",
-                d: "Name the painful job and the person who feels it most.",
+                t: "Pick industry",
+                d: "Load the vertical playbook — buyer, constraints, and MVP shapes.",
               },
               {
                 n: "02",
                 t: "Cut",
-                d: "Keep three must-haves. Write non-goals before features expand.",
+                d: "Rewrite the idea into one must-ship loop with explicit non-goals.",
               },
               {
                 n: "03",
                 t: "Scaffold",
-                d: "Generate a local project for web SaaS, waitlist, API, or CLI.",
+                d: "Generate a local project wired to that industry’s stack hints.",
               },
             ].map((step) => (
               <li key={step.n}>
@@ -105,12 +107,15 @@ export default function Home() {
             </p>
           </div>
           <pre className="overflow-x-auto border border-white/10 bg-black/30 p-5 text-sm leading-relaxed text-[var(--sand)]">
-{`npm run cli -- scaffold my-app \\
-  --template web-saas \\
-  --idea "AI notes for freelancers"
+{`npm run cli -- industries
+npm run cli -- plan --industry healthtech \\
+  --idea "AI that replaces the hospital system"
 
-# templates: web-saas | landing-waitlist
-#            api-service | cli-tool`}
+npm run cli -- scaffold my-clinic \\
+  --industry healthtech --template web-saas \\
+  --idea "Front-desk intake triage"
+
+npm run cli -- train-export`}
           </pre>
         </div>
       </section>

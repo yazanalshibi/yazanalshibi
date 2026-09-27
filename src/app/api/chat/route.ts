@@ -10,7 +10,11 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const messages = (body as { messages?: ChatMessage[] })?.messages;
+  const { messages, industryId } = body as {
+    messages?: ChatMessage[];
+    industryId?: string | null;
+  };
+
   if (!Array.isArray(messages) || messages.length === 0) {
     return NextResponse.json({ error: "messages required" }, { status: 400 });
   }
@@ -29,6 +33,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "no valid messages" }, { status: 400 });
   }
 
-  const reply = await runAgent(cleaned);
+  const reply = await runAgent(cleaned, industryId);
   return NextResponse.json(reply);
 }

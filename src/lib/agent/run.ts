@@ -1,16 +1,18 @@
-import {
-  SYSTEM_PROMPT,
-  buildMvpPlan,
-  formatPlanMarkdown,
-} from "./planner";
+import { buildMvpPlan, buildSystemPrompt, formatPlanMarkdown, resolveIndustry } from "./planner";
+import type { IndustryId } from "./industries";
 import type { ChatMessage } from "./types";
 
 export type AgentReply = {
   message: string;
   mode: "llm" | "planner";
+  industryId: string;
+  industryName: string;
 };
 
-async function callOpenAI(messages: ChatMessage[]): Promise<string | null> {
+async function callOpenAI(
+  messages: ChatMessage[],
+  system: string,
+): Promise<string | null> {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) return null;
 
@@ -24,7 +26,7 @@ async function callOpenAI(messages: ChatMessage[]): Promise<string | null> {
     body: JSON.stringify({
       model,
       temperature: 0.4,
-      messages: [{ role: "system", content: SYSTEM_PROMPT }, ...messages],
+      messages: [{ role: "system", content: system }, ...messages],
     }),
   });
 
@@ -39,19 +41,35 @@ async function callOpenAI(messages: ChatMessage[]): Promise<string | null> {
   return data.choices?.[0]?.message?.content?.trim() || null;
 }
 
-export async function runAgent(messages: ChatMessage[]): Promise<AgentReply> {
+export async function runAgent(
+  messages: ChatMessage[],
+  industryId?: IndustryId | string | null,
+): Promise<AgentReply> {
+  const idea =
+    [...messages].reverse().find((m) => m.role === "user")?.content || "";
+  const pack = resolveIndustry(idea, industryId);
+  const system = buildSystemPrompt(pack);
+
   try {
-    const llm = await callOpenAI(messages);
-    if (llm) return { message: llm, mode: "llm" };
+    const llm = await callOpenAI(messages, system);
+    if (llm) {
+      return {
+        message: llm,
+        mode: "llm",
+        industryId: pack.id,
+        industryName: pack.name,
+      };
+    }
   } catch (err) {
     console.error("LLM fallback:", err);
   }
 
-  const plan = buildMvpPlan(messages);
-  const preface =
-    "Working in planner mode (set `OPENAI_API_KEY` for full LLM replies). Here is a concrete MVP cut:\n\n";
+  const plan = buildMvpPlan(messages, pack.id);
+  const preface = `Working in planner mode · industry playbook **${pack.name}**. (Set \`OPENAI_API_KEY\` for full LLM replies.)\n\n`;
   return {
     message: preface + formatPlanMarkdown(plan),
     mode: "planner",
+    industryId: pack.id,
+    industryName: pack.name,
   };
 }

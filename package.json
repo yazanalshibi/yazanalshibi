@@ -12,7 +12,7 @@
     "start": "next start",
     "lint": "eslint",
     "cli": "tsx cli/index.ts",
-    "test:smoke": "tsx cli/index.ts templates && tsx cli/index.ts scaffold /tmp/mvp-smoke-app --template web-saas --idea \"smoke test\""
+    "test:smoke": "tsx cli/index.ts industries && tsx cli/index.ts plan --industry healthtech --idea \"AI hospital OS\" && tsx cli/index.ts train-export --out /tmp/mvp-train.jsonl && tsx cli/index.ts scaffold /tmp/mvp-smoke-app --template web-saas --industry healthtech --idea \"smoke test\""
   },
   "dependencies": {
     "next": "16.3.6",

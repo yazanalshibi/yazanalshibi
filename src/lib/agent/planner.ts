@@ -1,3 +1,10 @@
+import {
+  buildIndustryCurriculumPrompt,
+  detectIndustry,
+  getIndustry,
+  type IndustryId,
+  type IndustryPack,
+} from "./industries";
 import type { ChatMessage, MvpPlan, ScaffoldTemplateId } from "./types";
 
 const STOP_WORDS = new Set([
@@ -45,11 +52,13 @@ function titleCase(words: string[]): string {
 }
 
 function slugify(name: string): string {
-  return name
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "")
-    .slice(0, 48) || "mvp-project";
+  return (
+    name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "")
+      .slice(0, 48) || "mvp-project"
+  );
 }
 
 function extractIdea(messages: ChatMessage[]): string {
@@ -67,100 +76,69 @@ function guessName(idea: string): string {
   return titleCase(cleaned);
 }
 
-function detectTemplate(idea: string): ScaffoldTemplateId {
+function detectTemplate(idea: string, pack: IndustryPack): ScaffoldTemplateId {
   const t = idea.toLowerCase();
   if (/\b(cli|command.?line|terminal|scaffold)\b/.test(t)) return "cli-tool";
-  if (/\b(api|backend|webhook|service|microservice)\b/.test(t) && !/\b(ui|frontend|dashboard|app)\b/.test(t))
+  if (
+    /\b(api|backend|webhook|service|microservice)\b/.test(t) &&
+    !/\b(ui|frontend|dashboard|app)\b/.test(t)
+  )
     return "api-service";
   if (/\b(waitlist|landing|marketing|launch|newsletter)\b/.test(t))
     return "landing-waitlist";
-  return "web-saas";
+  return pack.preferredTemplate;
 }
 
-function stackFor(template: ScaffoldTemplateId) {
-  switch (template) {
-    case "landing-waitlist":
-      return {
-        frontend: "Next.js + Tailwind",
-        backend: "Next.js Route Handlers",
-        data: "SQLite or Resend + JSON store",
-        hosting: "Vercel",
-      };
-    case "api-service":
-      return {
-        frontend: "Minimal docs page",
-        backend: "Next.js Route Handlers / Hono",
-        data: "Postgres or SQLite",
-        hosting: "Fly.io or Railway",
-      };
-    case "cli-tool":
-      return {
-        frontend: "n/a",
-        backend: "Node.js TypeScript CLI",
-        data: "Local filesystem + JSON config",
-        hosting: "npm package",
-      };
-    default:
-      return {
-        frontend: "Next.js App Router + Tailwind",
-        backend: "Next.js Route Handlers",
-        data: "SQLite (local) → Postgres later",
-        hosting: "Vercel",
-      };
+function applyTrainingCut(idea: string, pack: IndustryPack): string {
+  const lower = idea.toLowerCase();
+  for (const ex of pack.examples) {
+    const tokens = ex.idea
+      .toLowerCase()
+      .split(/\W+/)
+      .filter((w) => w.length > 3);
+    const hits = tokens.filter((tok) => lower.includes(tok)).length;
+    if (hits >= Math.min(2, tokens.length)) {
+      return `${ex.cut} (trained rewrite from “${ex.idea}”-style ambition)`;
+    }
   }
+  return pack.mvpShapes[0];
 }
 
-export function buildMvpPlan(messages: ChatMessage[]): MvpPlan {
+export function resolveIndustry(
+  idea: string,
+  industryId?: IndustryId | string | null,
+): IndustryPack {
+  return getIndustry(industryId) ?? detectIndustry(idea);
+}
+
+export function buildMvpPlan(
+  messages: ChatMessage[],
+  industryId?: IndustryId | string | null,
+): MvpPlan {
   const idea = extractIdea(messages) || "a focused product for early users";
+  const pack = resolveIndustry(idea, industryId);
   const name = guessName(idea);
-  const template = detectTemplate(idea);
-  const stack = stackFor(template);
+  const template = detectTemplate(idea, pack);
+  const stack = pack.stackHints;
   const slug = slugify(name);
+  const trainedCut = applyTrainingCut(idea, pack);
 
   return {
     name,
-    oneLiner: `${name} helps people get value from “${idea.slice(0, 80)}${idea.length > 80 ? "…" : ""}” with the smallest useful loop.`,
-    problem: `People who care about this idea currently cobble together fragile workflows. ${name} replaces that with one guided path from intent to result.`,
-    targetUser: "Early adopters who will tolerate rough edges if the core job is done in under 5 minutes.",
-    coreLoop: "Describe intent → get a concrete plan → take one shippable action → review outcome → iterate.",
-    features: [
-      "Single primary flow that completes the core job",
-      "Clear empty state with one suggested first action",
-      "Save/share result of the first successful run",
-      "Basic auth or email capture only if required for the loop",
-      "Instrumentation for activation (first success) and drop-off",
-    ],
-    nonGoals: [
-      "Multi-tenant admin suites",
-      "Complex billing before retention is proven",
-      "Mobile native apps",
-      "Perfect design system polish",
-    ],
+    industryId: pack.id,
+    industryName: pack.name,
+    oneLiner: `${name} (${pack.name}) ships “${trainedCut}” for: ${idea.slice(0, 72)}${idea.length > 72 ? "…" : ""}`,
+    problem: `${pack.whyMvp} Immediate pain patterns in-market: ${pack.painPatterns.slice(0, 2).join("; ")}.`,
+    targetUser: pack.buyer,
+    coreLoop: trainedCut,
+    features: pack.mustHaves,
+    nonGoals: pack.nonGoals,
+    constraints: pack.constraints,
     stack,
-    milestones: [
-      {
-        title: "Day 0 — Spec lock",
-        outcome: "One sentence problem, one user, three must-have features, written non-goals.",
-      },
-      {
-        title: "Day 1 — Vertical slice",
-        outcome: "Happy path works end-to-end with fake or local data.",
-      },
-      {
-        title: "Day 2 — First outsider",
-        outcome: "One real user completes the core loop without you in the room.",
-      },
-      {
-        title: "Day 3 — Instrument + cut",
-        outcome: "Track activation; remove anything that does not serve the loop.",
-      },
-    ],
-    risks: [
-      "Scope creep into adjacent features before activation",
-      "Building auth/billing before proving the core loop",
-      "Vague positioning that makes onboarding copy weak",
-    ],
-    scaffoldCommand: `npx mvp-specialist scaffold "${slug}" --template ${template} --idea "${idea.replace(/"/g, "'").slice(0, 120)}"`,
+    milestones: pack.milestones,
+    risks: pack.risks,
+    discoveryQuestions: [...pack.discoveryQuestions],
+    scaffoldCommand: `npx mvp-specialist scaffold "${slug}" --template ${template} --industry ${pack.id} --idea "${idea.replace(/"/g, "'").slice(0, 120)}"`,
   };
 }
 
@@ -168,15 +146,17 @@ export function formatPlanMarkdown(plan: MvpPlan): string {
   return [
     `# ${plan.name}`,
     "",
+    `**Industry:** ${plan.industryName}`,
+    "",
     plan.oneLiner,
     "",
-    "## Problem",
+    "## Problem (industry lens)",
     plan.problem,
     "",
     "## Target user",
     plan.targetUser,
     "",
-    "## Core loop",
+    "## Core MVP cut",
     plan.coreLoop,
     "",
     "## Must-have features",
@@ -184,6 +164,9 @@ export function formatPlanMarkdown(plan: MvpPlan): string {
     "",
     "## Non-goals",
     ...plan.nonGoals.map((f) => `- ${f}`),
+    "",
+    "## Industry constraints",
+    ...plan.constraints.map((f) => `- ${f}`),
     "",
     "## Suggested stack",
     `- Frontend: ${plan.stack.frontend}`,
@@ -197,23 +180,35 @@ export function formatPlanMarkdown(plan: MvpPlan): string {
     "## Risks",
     ...plan.risks.map((r) => `- ${r}`),
     "",
+    "## Still unclear? Ask",
+    ...plan.discoveryQuestions.map((q) => `- ${q}`),
+    "",
     "## Scaffold locally",
     "```bash",
     plan.scaffoldCommand,
     "```",
     "",
-    "Want me to tighten scope, swap the stack, or rewrite this for investors vs builders?",
+    "Want a tighter cut for a sub-niche, or switch industry playbook?",
   ].join("\n");
 }
 
-export const SYSTEM_PROMPT = `You are MVP Specialist — an AI agent that helps founders turn raw ideas into shippable MVPs.
+export function buildSystemPrompt(pack?: IndustryPack | null): string {
+  return `You are MVP Specialist — an AI agent trained to build shippable MVPs by industry.
 
 Your job:
-1. Clarify the problem and target user in plain language.
-2. Cut scope ruthlessly — prefer a vertical slice over a platform.
-3. Produce concrete plans: features, non-goals, stack, milestones, risks.
-4. When useful, suggest the CLI scaffold command from this product.
+1. Detect or accept the industry playbook.
+2. Clarify buyer + weekly pain in plain language.
+3. Cut empire ideas into the industry's winning MVP shapes.
+4. Produce features, non-goals, constraints, stack, milestones, risks.
+5. Suggest the CLI scaffold command with --industry when useful.
 
 Style: direct, specific, no fluff. Prefer numbered steps and short bullets.
-If the user is vague, ask at most two sharp questions, then still draft a provisional plan.
-Never invent fake metrics or fake user research.`;
+If the user is vague, ask at most two sharp questions from the industry pack, then still draft a provisional plan.
+Never invent fake metrics or fake user research.
+Never ignore industry constraints (PHI, money custody, legal advice, marketplace liquidity, etc.).
+
+${buildIndustryCurriculumPrompt(pack)}`;
+}
+
+/** @deprecated use buildSystemPrompt */
+export const SYSTEM_PROMPT = buildSystemPrompt();

@@ -1,13 +1,15 @@
 "use client";
 
-import { FormEvent, useEffect, useRef, useState, useTransition } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import type { ChatMessage } from "@/lib/agent/types";
 
-const STARTERS = [
-  "A waitlist for an AI meeting notes tool for freelancers",
-  "CLI that turns a product idea into a Next.js scaffold",
-  "Marketplace MVP connecting local tutors with parents",
-];
+type IndustrySummary = {
+  id: string;
+  name: string;
+  blurb: string;
+  mvpShapes: string[];
+  examples: { idea: string; cut: string }[];
+};
 
 function renderLiteMarkdown(text: string) {
   const blocks = text.split("\n");
@@ -50,16 +52,44 @@ function renderLiteMarkdown(text: string) {
 }
 
 export function AgentChat() {
+  const [industries, setIndustries] = useState<IndustrySummary[]>([]);
+  const [industryId, setIndustryId] = useState<string>("b2b-saas");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [mode, setMode] = useState<"llm" | "planner" | null>(null);
+  const [activeIndustry, setActiveIndustry] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    void fetch("/api/industries")
+      .then((r) => r.json())
+      .then((data: { industries: IndustrySummary[] }) => {
+        setIndustries(data.industries || []);
+      })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, pending]);
+
+  const selected = useMemo(
+    () => industries.find((i) => i.id === industryId) || null,
+    [industries, industryId],
+  );
+
+  const starters = useMemo(() => {
+    if (!selected?.examples?.length) {
+      return [
+        "A waitlist for an AI meeting notes tool for freelancers",
+        "CLI that turns a product idea into a Next.js scaffold",
+        "Marketplace MVP connecting local tutors with parents",
+      ];
+    }
+    return selected.examples.map((ex) => ex.idea);
+  }, [selected]);
 
   async function send(content: string) {
     const trimmed = content.trim();
@@ -75,11 +105,12 @@ export function AgentChat() {
         const res = await fetch("/api/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ messages: nextMessages }),
+          body: JSON.stringify({ messages: nextMessages, industryId }),
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || "Request failed");
         setMode(data.mode);
+        setActiveIndustry(data.industryName || null);
         setMessages((prev) => [
           ...prev,
           { role: "assistant", content: data.message as string },
@@ -98,22 +129,47 @@ export function AgentChat() {
   return (
     <div className="flex min-h-[calc(100vh-4.5rem)] flex-col">
       <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col px-5 pb-8 pt-6 sm:px-8">
+        <div className="mb-6">
+          <p className="text-xs uppercase tracking-[0.2em] text-[var(--ink)]/50">
+            Industry playbook
+          </p>
+          <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
+            {industries.map((ind) => (
+              <button
+                key={ind.id}
+                type="button"
+                onClick={() => setIndustryId(ind.id)}
+                className={`shrink-0 border px-3 py-1.5 text-xs transition ${
+                  industryId === ind.id
+                    ? "border-[var(--teal)] bg-[var(--teal)] text-[var(--foam)]"
+                    : "border-[var(--ink)]/15 bg-[var(--foam)]/70 text-[var(--ink)]/75 hover:border-[var(--teal)]"
+                }`}
+              >
+                {ind.name}
+              </button>
+            ))}
+          </div>
+          {selected && (
+            <p className="mt-3 text-sm text-[var(--ink)]/60">{selected.blurb}</p>
+          )}
+        </div>
+
         {messages.length === 0 ? (
-          <div className="flex flex-1 flex-col justify-center gap-8 py-10">
+          <div className="flex flex-1 flex-col justify-center gap-8 py-6">
             <div className="reveal">
               <p className="text-xs uppercase tracking-[0.2em] text-[var(--ink)]/50">
                 Planning room
               </p>
               <h1 className="mt-3 font-[family-name:var(--font-display)] text-4xl leading-[1.05] text-[var(--ink)] sm:text-5xl">
-                Describe the idea. Get a shippable MVP cut.
+                Train the cut on the industry that needs the MVP.
               </h1>
               <p className="mt-4 max-w-xl text-[var(--ink)]/70">
-                The agent returns problem framing, must-haves, non-goals, stack, milestones,
-                and a CLI scaffold command.
+                Each playbook teaches the agent winning MVP shapes, must-haves, non-goals,
+                and constraints for that vertical — then rewrites empire ideas into shippable cuts.
               </p>
             </div>
             <div className="grid gap-3 sm:grid-cols-3">
-              {STARTERS.map((s) => (
+              {starters.map((s) => (
                 <button
                   key={s}
                   type="button"
@@ -124,6 +180,18 @@ export function AgentChat() {
                 </button>
               ))}
             </div>
+            {selected?.mvpShapes?.length ? (
+              <div>
+                <p className="text-xs uppercase tracking-[0.16em] text-[var(--ink)]/40">
+                  Winning shapes · {selected.name}
+                </p>
+                <ul className="mt-2 space-y-1 text-sm text-[var(--ink)]/65">
+                  {selected.mvpShapes.map((shape) => (
+                    <li key={shape}>– {shape}</li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
           </div>
         ) : (
           <div className="flex flex-1 flex-col gap-5 py-4">
@@ -141,7 +209,7 @@ export function AgentChat() {
             ))}
             {pending && (
               <div className="mr-auto border border-[var(--ink)]/10 bg-[var(--foam)]/60 px-4 py-3 text-sm text-[var(--ink)]/55">
-                Cutting scope…
+                Applying {selected?.name || "industry"} playbook…
               </div>
             )}
             <div ref={bottomRef} />
@@ -153,9 +221,11 @@ export function AgentChat() {
             {error}
           </p>
         )}
-        {mode && (
+        {(mode || activeIndustry) && (
           <p className="mb-2 text-xs uppercase tracking-[0.16em] text-[var(--ink)]/40">
-            mode · {mode}
+            {mode ? `mode · ${mode}` : null}
+            {mode && activeIndustry ? " · " : null}
+            {activeIndustry ? `industry · ${activeIndustry}` : null}
           </p>
         )}
 
@@ -166,7 +236,7 @@ export function AgentChat() {
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="What should we ship first?"
+            placeholder={`MVP idea for ${selected?.name || "this industry"}…`}
             className="min-w-0 flex-1 bg-transparent px-3 py-3 text-[var(--ink)] outline-none placeholder:text-[var(--ink)]/35"
             disabled={pending}
           />

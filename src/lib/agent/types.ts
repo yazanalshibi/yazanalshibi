@@ -7,12 +7,15 @@ export type ChatMessage = {
 
 export type MvpPlan = {
   name: string;
+  industryId: string;
+  industryName: string;
   oneLiner: string;
   problem: string;
   targetUser: string;
   coreLoop: string;
   features: string[];
   nonGoals: string[];
+  constraints: string[];
   stack: {
     frontend: string;
     backend: string;
@@ -21,6 +24,7 @@ export type MvpPlan = {
   };
   milestones: { title: string; outcome: string }[];
   risks: string[];
+  discoveryQuestions: string[];
   scaffoldCommand: string;
 };
 
