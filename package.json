@@ -1,8 +1,8 @@
 {
-  "name": "mvp-specialist",
+  "name": "live-venture-os",
   "version": "0.1.0",
   "private": true,
-  "description": "AI agent MVP Specialist — chat planner + CLI scaffolder",
+  "description": "Live Venture OS — AI-native venture operating system (V0.1)",
   "bin": {
     "mvp-specialist": "./cli/run.mjs"
   },
