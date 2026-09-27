@@ -1,42 +1,64 @@
 import Link from "next/link";
-import { SiteHeader } from "@/components/SiteHeader";
 
 export default function Home() {
   return (
     <div className="atmosphere min-h-screen text-[var(--ink)]">
       <div className="relative overflow-hidden">
         <div className="grid-fade pointer-events-none absolute inset-0" />
-        <SiteHeader />
-
-        <section className="relative grid min-h-[calc(100svh-5rem)] grid-cols-1 lg:grid-cols-[1.05fr_0.95fr]">
-          <div className="relative z-10 flex flex-col justify-center px-5 pb-16 pt-8 sm:px-8 lg:px-12 lg:pb-24">
-            <p className="reveal text-xs uppercase tracking-[0.22em] text-[var(--ink)]/50">
-              Yazan Alshibi · AI agent
+        <header className="relative z-20 flex items-center justify-between px-5 py-5 sm:px-8 lg:px-12">
+          <div>
+            <p className="font-[family-name:var(--font-display)] text-xl sm:text-2xl">
+              Live Venture OS
             </p>
-            <h1 className="reveal reveal-delay-1 mt-4 max-w-[12ch] font-[family-name:var(--font-display)] text-[clamp(3rem,9vw,6.4rem)] font-bold leading-[0.92] tracking-tight">
+            <p className="text-xs uppercase tracking-[0.18em] text-[var(--ink)]/45">
+              AI-native venture operating infrastructure
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Link
+              href="/agent"
+              className="hidden border border-[var(--ink)]/15 px-4 py-2 text-sm sm:inline"
+            >
               MVP Specialist
+            </Link>
+            <Link
+              href="/create"
+              className="bg-[var(--teal)] px-4 py-2 text-sm font-medium text-[var(--foam)]"
+            >
+              Create venture
+            </Link>
+          </div>
+        </header>
+
+        <section className="relative grid min-h-[calc(100svh-5rem)] lg:grid-cols-[1.05fr_0.95fr]">
+          <div className="relative z-10 flex flex-col justify-center px-5 pb-16 pt-8 sm:px-8 lg:px-12">
+            <p className="reveal text-xs uppercase tracking-[0.22em] text-[var(--ink)]/50">
+              Build live · Operate · Learn · Scale
+            </p>
+            <h1 className="reveal reveal-delay-1 mt-4 max-w-[14ch] font-[family-name:var(--font-display)] text-[clamp(2.6rem,7vw,5.4rem)] font-bold leading-[0.95] tracking-tight">
+              Live Venture OS
             </h1>
-            <p className="reveal reveal-delay-2 mt-6 max-w-md text-lg text-[var(--ink)]/70 sm:text-xl">
-              An AI agent that turns raw ideas into scoped plans and local
-              scaffolds — chat in the browser, or run the CLI.
+            <p className="reveal reveal-delay-2 mt-6 max-w-md text-lg text-[var(--ink)]/70">
+              Turn an idea into a live operating business. Native CRM + ERP,
+              plug-and-play modules, real customer data, and an AI advisor —
+              in one system.
             </p>
             <div className="reveal reveal-delay-3 mt-9 flex flex-wrap gap-3">
               <Link
-                href="/agent"
-                className="bg-[var(--teal)] px-6 py-3 text-sm font-semibold text-[var(--foam)] transition hover:bg-[var(--teal-deep)]"
+                href="/create"
+                className="bg-[var(--teal)] px-6 py-3 text-sm font-semibold text-[var(--foam)]"
               >
-                Plan an MVP
+                Start a venture
               </Link>
-              <a
-                href="#cli"
-                className="border border-[var(--ink)]/20 bg-[var(--foam)]/50 px-6 py-3 text-sm font-medium text-[var(--ink)] transition hover:border-[var(--teal)]"
+              <Link
+                href="/create"
+                className="border border-[var(--ink)]/20 px-6 py-3 text-sm"
               >
-                Use the CLI
-              </a>
+                Try ShineOn demo
+              </Link>
             </div>
           </div>
-
-          <div className="relative min-h-[42vh] lg:min-h-full">
+          <div className="relative min-h-[40vh] lg:min-h-full">
             <div className="hero-visual absolute inset-0" />
             <svg
               className="stroke-draw pointer-events-none absolute bottom-10 left-1/2 h-10 w-[min(70%,22rem)] -translate-x-1/2 opacity-80"
@@ -45,7 +67,7 @@ export default function Home() {
               aria-hidden
             >
               <path
-                d="M4 12h52l18-8 18 16 18-12 18 10 18-6h70"
+                d="M4 12h40l16-8 16 16 16-12 16 10 16-6h80"
                 stroke="var(--sand)"
                 strokeWidth="2"
               />
@@ -54,95 +76,37 @@ export default function Home() {
         </section>
       </div>
 
-      <section id="method" className="border-t border-[var(--ink)]/10 px-5 py-20 sm:px-8 lg:px-12">
+      <section className="border-t border-[var(--ink)]/10 px-5 py-20 sm:px-8 lg:px-12">
         <div className="mx-auto max-w-5xl">
           <h2 className="font-[family-name:var(--font-display)] text-3xl sm:text-4xl">
-            One job: make the first shippable cut.
+            Not a prototype factory. An operating system for businesses.
           </h2>
           <p className="mt-4 max-w-2xl text-[var(--ink)]/65">
-            MVP Specialist is trained on industries that actually need MVPs —
-            HealthTech, FinTech, EdTech, PropTech, e‑commerce, logistics, B2B SaaS,
-            local services, LegalTech, and climate. Each playbook teaches winning
-            shapes, constraints, and how to rewrite empire ideas.
+            Idea → Configure → Launch live → Real users → Real data → AI analysis →
+            Improve → Validate → Scale.
           </p>
-          <ol className="mt-12 grid gap-10 sm:grid-cols-3">
+          <ol className="mt-12 grid gap-8 sm:grid-cols-3">
             {[
-              {
-                n: "01",
-                t: "Pick industry",
-                d: "Load the vertical playbook — buyer, constraints, and MVP shapes.",
-              },
-              {
-                n: "02",
-                t: "Cut",
-                d: "Rewrite the idea into one must-ship loop with explicit non-goals.",
-              },
-              {
-                n: "03",
-                t: "Scaffold",
-                d: "Generate a local project wired to that industry’s stack hints.",
-              },
-            ].map((step) => (
-              <li key={step.n}>
-                <p className="text-xs tracking-[0.2em] text-[var(--signal)]">{step.n}</p>
-                <h3 className="mt-2 font-[family-name:var(--font-display)] text-2xl">
-                  {step.t}
-                </h3>
-                <p className="mt-2 text-[var(--ink)]/65">{step.d}</p>
+              ["01", "Launch", "Publish a customer experience in minutes, not months."],
+              ["02", "Operate", "CRM, bookings, orders, staff, and locations in one model."],
+              ["03", "Learn", "Events, venture health, and AI recommendations from real activity."],
+            ].map(([n, t, d]) => (
+              <li key={n}>
+                <p className="text-xs tracking-[0.2em] text-[var(--signal)]">{n}</p>
+                <h3 className="mt-2 font-[family-name:var(--font-display)] text-2xl">{t}</h3>
+                <p className="mt-2 text-[var(--ink)]/65">{d}</p>
               </li>
             ))}
           </ol>
         </div>
       </section>
 
-      <section id="cli" className="bg-[var(--ink)] px-5 py-20 text-[var(--foam)] sm:px-8 lg:px-12">
-        <div className="mx-auto grid max-w-5xl gap-10 lg:grid-cols-[1fr_1.1fr] lg:items-center">
-          <div>
-            <h2 className="font-[family-name:var(--font-display)] text-3xl sm:text-4xl">
-              CLI for when chat is not enough.
-            </h2>
-            <p className="mt-4 text-[var(--sand)]/75">
-              Scaffold a starter from the terminal. Same templates the agent
-              recommends in chat.
-            </p>
-          </div>
-          <pre className="overflow-x-auto border border-white/10 bg-black/30 p-5 text-sm leading-relaxed text-[var(--sand)]">
-{`npm run cli -- industries
-npm run cli -- plan --industry healthtech \\
-  --idea "AI that replaces the hospital system"
-
-npm run cli -- scaffold my-clinic \\
-  --industry healthtech --template web-saas \\
-  --idea "Front-desk intake triage"
-
-npm run cli -- train-export`}
-          </pre>
-        </div>
-      </section>
-
-      <section className="px-5 py-20 sm:px-8 lg:px-12">
-        <div className="mx-auto max-w-5xl border-t border-[var(--ink)]/10 pt-16">
-          <h2 className="font-[family-name:var(--font-display)] text-3xl">
-            Built for founders who ship this week.
-          </h2>
-          <p className="mt-4 max-w-xl text-[var(--ink)]/65">
-            Chat plans work offline via the built-in planner. Add{" "}
-            <code className="bg-[var(--mist)] px-1.5 py-0.5 text-sm">OPENAI_API_KEY</code>{" "}
-            for full LLM replies.
-          </p>
-          <Link
-            href="/agent"
-            className="mt-8 inline-flex bg-[var(--teal)] px-6 py-3 text-sm font-semibold text-[var(--foam)] transition hover:bg-[var(--teal-deep)]"
-          >
-            Open the agent
-          </Link>
-        </div>
-      </section>
-
       <footer className="border-t border-[var(--ink)]/10 px-5 py-8 text-sm text-[var(--ink)]/50 sm:px-8 lg:px-12">
-        <div className="mx-auto flex max-w-5xl flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <span>MVP Specialist · Yazan Alshibi</span>
-          <span>Chat agent · CLI scaffolder · landing in one MVP</span>
+        <div className="mx-auto flex max-w-5xl justify-between gap-4">
+          <span>Live Venture OS · V0.1</span>
+          <Link href="/agent" className="hover:text-[var(--ink)]">
+            MVP Specialist (industry trainer)
+          </Link>
         </div>
       </footer>
     </div>

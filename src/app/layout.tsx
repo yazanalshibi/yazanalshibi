@@ -15,9 +15,9 @@ const body = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "MVP Specialist — AI agent for shippable MVPs",
+  title: "Live Venture OS — AI-native venture operating system",
   description:
-    "Turn raw product ideas into scoped plans, stacks, milestones, and local project scaffolds. Chat agent + CLI by Yazan Alshibi.",
+    "Build, launch, operate, validate, and scale real businesses from one system. Native CRM + ERP + live customer experience + AI advisor.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

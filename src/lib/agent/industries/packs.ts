@@ -660,6 +660,10 @@ export const INDUSTRY_PACKS: IndustryPack[] = [
       "cleaner",
       "freelancer",
       "gig",
+      "detailing",
+      "auto",
+      "car wash",
+      "mobile service",
     ],
     discoveryQuestions: [
       "Which side pays first — supply or demand?",

@@ -39,3 +39,6 @@ yarn-error.log*
 
 # training exports (local)
 /training/
+
+# Live Venture OS local database
+/data/

@@ -1,38 +1,51 @@
-# MVP Specialist
+# Live Venture OS
 
-AI agent that turns product ideas into **industry-trained MVP plans** and **local scaffolds**.
+AI-native **Venture Operating System** — build, launch, operate, validate, and scale real businesses from one environment.
 
-Built for [Yazan Alshibi](https://github.com/yazanalshibi) as a three-in-one MVP:
+> Do not build a prototype and hope it works later. Build the business live, collect real market data immediately, and improve it while it operates.
 
-1. **Landing** — brand site for the specialist
-2. **Chat agent** — `/agent` plans with vertical playbooks
-3. **CLI** — scaffold + plan + export training corpus
+## V0.1 loop (shipped)
 
-## Industry training
+Describe idea → venture blueprint → activate modules → generate live site → publish → capture leads/bookings/orders → CRM/ERP admin → performance → AI recommendation.
 
-The agent is trained on playbooks for industries that repeatedly need MVPs:
+### Routes
 
-| ID | Industry |
+| Path | Purpose |
 | --- | --- |
-| `healthtech` | HealthTech |
-| `fintech` | FinTech |
-| `edtech` | EdTech |
-| `proptech` | PropTech / Real Estate |
-| `ecommerce` | E-commerce / Retail |
-| `logistics` | Logistics / Supply Chain |
-| `b2b-saas` | B2B SaaS / Productivity |
-| `local-services` | Local Services / Marketplace |
-| `legaltech` | LegalTech |
-| `climate` | Climate / Energy |
+| `/` | Product landing |
+| `/create` | Create venture (or load ShineOn demo) |
+| `/os/[slug]` | Admin Business OS dashboard |
+| `/os/[slug]/blueprint` | Blueprint + module activation |
+| `/os/[slug]/builder` | Page editor |
+| `/os/[slug]/customers` | CRM leads & customers |
+| `/os/[slug]/bookings` | Bookings & orders |
+| `/os/[slug]/products` | Services, staff, locations |
+| `/os/[slug]/performance` | Metrics, health, events |
+| `/os/[slug]/advisor` | AI recommendations |
+| `/v/[slug]` | Live customer experience |
+| `/agent` | MVP Specialist industry trainer |
 
-Each pack teaches: why MVPs win there, buyer, pain patterns, MVP shapes, must-haves, non-goals, constraints, stack hints, milestones, risks, and rewrite examples (empire idea → shippable cut).
-
-Export the fine-tuning / eval corpus:
+### Demo venture
 
 ```bash
-npm run cli -- train-export
-# or GET /api/training?format=jsonl
+npm run dev
+# open /create → “Load ShineOn demo”
+# Live site: /v/shineon
+# Admin: /os/shineon
 ```
+
+Mobile car detailing membership for Toronto condo residents — CRM, booking, payments, membership, reviews, staff, locations.
+
+## Architecture (V0.1)
+
+- **Venture Engine** — idea → blueprint → modules → pages
+- **Native CRM** — leads, customers, sources, LTV
+- **Native ERP (lite)** — services, orders, staff, locations, expenses
+- **Event tracking** — page views, leads, bookings, payments
+- **AI Advisor** — recommendations from real venture metrics
+- **JSON store** — `data/venture-os.json` (local persistence)
+
+Industry playbooks from MVP Specialist still power blueprint industry detection (`/agent`, `src/lib/agent/industries`).
 
 ## Quick start
 
@@ -41,32 +54,12 @@ npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) or `/agent` (pick an industry chip).
+## What is intentionally NOT in V0.1
 
-### Optional LLM mode
+Full accounting, payroll, franchise legal, investor network, native mobile apps, marketplace, dozens of autonomous agents — deferred per the product blueprint.
 
-Copy `.env.example` to `.env.local` and set `OPENAI_API_KEY`. Without a key, the industry planner still returns full MVP cuts (playbook mode).
+## Product definition
 
-## CLI
-
-```bash
-npm run cli -- industries
-
-npm run cli -- plan --industry fintech --idea "Neobank for everyone"
-
-npm run cli -- scaffold my-app \
-  --industry healthtech \
-  --template web-saas \
-  --idea "Clinic intake triage"
-```
-
-## API
-
-- `POST /api/chat` — `{ messages, industryId? }` → `{ message, mode, industryId, industryName }`
-- `GET /api/industries` — playbook summaries
-- `GET /api/training?format=jsonl` — training corpus
-- `GET|POST /api/scaffold` — templates / file generation
-
-## Stack
-
-Next.js App Router · TypeScript · Tailwind CSS v4 · Node CLI via `tsx`
+**Category:** AI-Native Venture Operating System  
+**Promise:** Turn an idea into a live operating business and improve it using real data.  
+**Core:** Native CRM + Native ERP + Modules + Live Website + Analytics + AI Intelligence
