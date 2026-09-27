@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { LiveVentureSite } from "@/components/venture/LiveVentureSite";
-import { getVenture, listServices } from "@/lib/venture/store";
+import { getPreferences, getVenture, listServices } from "@/lib/venture/store";
 
 export const dynamic = "force-dynamic";
 
@@ -12,6 +12,7 @@ export default async function LivePage({
   const { slug } = await params;
   const venture = getVenture(slug);
   if (!venture) notFound();
+  const prefs = getPreferences(venture.id);
   if (!venture.live) {
     return (
       <div className="grid min-h-screen place-items-center bg-[#0f1c24] px-6 text-center text-white">
@@ -25,5 +26,11 @@ export default async function LivePage({
       </div>
     );
   }
-  return <LiveVentureSite venture={venture} services={listServices(venture.id)} />;
+  return (
+    <LiveVentureSite
+      venture={venture}
+      services={listServices(venture.id)}
+      brand={prefs.brand}
+    />
+  );
 }

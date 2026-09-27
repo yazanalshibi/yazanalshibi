@@ -1,3 +1,4 @@
+import { BehaviorTracker } from "@/components/venture/BehaviorTracker";
 import { notFound } from "next/navigation";
 import {
   getVenture,
@@ -21,7 +22,9 @@ export default async function BookingsPage({
   const orders = listOrders(venture.id);
 
   return (
-    <div className="mx-auto max-w-5xl space-y-8">
+    <>
+      <BehaviorTracker slug={slug} path="/bookings" />
+      <div className="mx-auto max-w-5xl space-y-8">
       <div>
         <p className="text-xs uppercase tracking-[0.18em] text-[var(--ink)]/45">Operations</p>
         <h1 className="mt-2 font-[family-name:var(--font-display)] text-3xl">Bookings & Orders</h1>
@@ -59,5 +62,6 @@ export default async function BookingsPage({
         </ul>
       </section>
     </div>
+    </>
   );
 }

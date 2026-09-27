@@ -60,6 +60,19 @@ export type VentureSitePage = {
   cta: string;
 };
 
+export type {
+  BrandIdentity,
+  CloudShareRule,
+  DashboardWidgetPref,
+  InsightPref,
+  UxSuggestion,
+  BehaviorHit,
+  VenturePreferences,
+  DataCategory,
+} from "./preferences";
+
+import type { BehaviorHit, BrandIdentity, VenturePreferences } from "./preferences";
+
 export type Venture = {
   id: string;
   organizationId: string;
@@ -71,6 +84,7 @@ export type Venture = {
   modules: ModuleId[];
   pages: VentureSitePage[];
   live: boolean;
+  brand?: BrandIdentity;
   createdAt: string;
   updatedAt: string;
 };
@@ -176,6 +190,14 @@ export type Recommendation = {
   createdAt: string;
 };
 
+export type CloudMirror = {
+  ventureId: string;
+  category: string;
+  sharedAt: string;
+  expiresAt: string | null;
+  payload: unknown;
+};
+
 export type DbShape = {
   ventures: Venture[];
   customers: Customer[];
@@ -188,4 +210,7 @@ export type DbShape = {
   locations: Location[];
   events: VentureEvent[];
   recommendations: Recommendation[];
+  preferences: VenturePreferences[];
+  behavior: BehaviorHit[];
+  cloudMirrors: CloudMirror[];
 };

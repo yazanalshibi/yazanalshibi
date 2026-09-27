@@ -1,15 +1,21 @@
 "use client";
 
 import { FormEvent, useEffect, useState, useTransition } from "react";
+import type { BrandIdentity } from "@/lib/venture/preferences";
 import type { ServiceItem, Venture } from "@/lib/venture/types";
+import { brandCssVars } from "@/lib/venture/brand";
+import { defaultBrand } from "@/lib/venture/preferences";
 
 export function LiveVentureSite({
   venture,
   services,
+  brand: brandProp,
 }: {
   venture: Venture;
   services: ServiceItem[];
+  brand?: BrandIdentity;
 }) {
+  const brand = brandProp || venture.brand || defaultBrand(venture.name);
   const [tab, setTab] = useState<"home" | "services" | "book" | "contact">("home");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -18,6 +24,8 @@ export function LiveVentureSite({
   const [message, setMessage] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const home = venture.pages.find((p) => p.slug === "home") || venture.pages[0];
+  const radius =
+    brand.radius === "sharp" ? "0px" : brand.radius === "round" ? "18px" : "8px";
 
   useEffect(() => {
     void fetch(`/api/ventures/${venture.slug}/public`, {
@@ -60,22 +68,23 @@ export function LiveVentureSite({
     });
   }
 
-  function onLead(e: FormEvent) {
-    e.preventDefault();
-    submit("lead");
-  }
-
-  function onCheckout(e: FormEvent) {
-    e.preventDefault();
-    submit("checkout");
-  }
-
   return (
-    <div className="min-h-screen bg-[#0f1c24] text-[#f3f7f6]">
+    <div
+      className="min-h-screen"
+      style={{
+        ...brandCssVars(brand),
+        background: brand.background,
+        color: brand.foreground,
+        fontFamily: brand.fontBody,
+      }}
+    >
       <header className="mx-auto flex max-w-5xl items-center justify-between px-5 py-5">
         <div>
-          <p className="font-[family-name:var(--font-display)] text-xl">{venture.name}</p>
-          <p className="text-xs uppercase tracking-[0.16em] text-white/45">Live venture</p>
+          <p className="text-xs uppercase tracking-[0.18em] opacity-50">{brand.logoText}</p>
+          <p className="text-xl" style={{ fontFamily: brand.fontDisplay }}>
+            {brand.displayName}
+          </p>
+          <p className="text-xs opacity-50">{brand.tagline}</p>
         </div>
         <nav className="flex gap-2 text-sm">
           {(
@@ -90,7 +99,13 @@ export function LiveVentureSite({
               key={id}
               type="button"
               onClick={() => setTab(id)}
-              className={`px-3 py-1.5 ${tab === id ? "bg-[#0f766e]" : "text-white/70"}`}
+              className="px-3 py-1.5"
+              style={{
+                background: tab === id ? brand.primary : "transparent",
+                color: brand.foreground,
+                borderRadius: radius,
+                opacity: tab === id ? 1 : 0.7,
+              }}
             >
               {label}
             </button>
@@ -101,14 +116,20 @@ export function LiveVentureSite({
       <main className="mx-auto max-w-5xl px-5 pb-20 pt-10">
         {tab === "home" && (
           <section className="max-w-2xl">
-            <h1 className="font-[family-name:var(--font-display)] text-5xl leading-tight">
+            <h1
+              className="text-5xl leading-tight"
+              style={{ fontFamily: brand.fontDisplay }}
+            >
               {home?.headline}
             </h1>
-            <p className="mt-5 text-lg text-white/70 whitespace-pre-wrap">{home?.body}</p>
+            <p className="mt-5 text-lg whitespace-pre-wrap" style={{ color: brand.muted }}>
+              {home?.body}
+            </p>
             <button
               type="button"
               onClick={() => setTab("book")}
-              className="mt-8 bg-[#0f766e] px-6 py-3 text-sm font-semibold"
+              className="mt-8 px-6 py-3 text-sm font-semibold"
+              style={{ background: brand.primary, color: brand.foreground, borderRadius: radius }}
             >
               {home?.cta || "Book now"}
             </button>
@@ -117,16 +138,25 @@ export function LiveVentureSite({
 
         {tab === "services" && (
           <section>
-            <h2 className="font-[family-name:var(--font-display)] text-3xl">Services</h2>
+            <h2 className="text-3xl" style={{ fontFamily: brand.fontDisplay }}>
+              Services
+            </h2>
             <ul className="mt-6 grid gap-4 sm:grid-cols-3">
               {services.map((s) => (
-                <li key={s.id} className="border border-white/10 bg-white/5 p-5">
+                <li
+                  key={s.id}
+                  className="border border-white/10 p-5"
+                  style={{ background: brand.surface, borderRadius: radius }}
+                >
                   <p className="font-medium">{s.name}</p>
-                  <p className="mt-2 text-sm text-white/65">{s.description}</p>
+                  <p className="mt-2 text-sm" style={{ color: brand.muted }}>
+                    {s.description}
+                  </p>
                   <p className="mt-4 text-2xl">${s.price}</p>
                   <button
                     type="button"
-                    className="mt-4 text-sm text-[#5eead4]"
+                    className="mt-4 text-sm"
+                    style={{ color: brand.accent }}
                     onClick={() => {
                       setServiceId(s.id);
                       setTab("book");
@@ -142,15 +172,21 @@ export function LiveVentureSite({
 
         {tab === "book" && (
           <section className="max-w-lg">
-            <h2 className="font-[family-name:var(--font-display)] text-3xl">Book & pay</h2>
-            <p className="mt-2 text-sm text-white/60">
-              V0.1 records a paid order immediately (demo payments).
-            </p>
-            <form onSubmit={onCheckout} className="mt-6 space-y-3">
+            <h2 className="text-3xl" style={{ fontFamily: brand.fontDisplay }}>
+              Book & pay
+            </h2>
+            <form
+              onSubmit={(e: FormEvent) => {
+                e.preventDefault();
+                submit("checkout");
+              }}
+              className="mt-6 space-y-3"
+            >
               <select
                 value={serviceId}
                 onChange={(e) => setServiceId(e.target.value)}
-                className="w-full bg-white/5 p-3 text-sm outline-none"
+                className="w-full p-3 text-sm outline-none"
+                style={{ background: brand.surface, borderRadius: radius, color: brand.foreground }}
               >
                 {services.map((s) => (
                   <option key={s.id} value={s.id} className="text-black">
@@ -158,31 +194,27 @@ export function LiveVentureSite({
                   </option>
                 ))}
               </select>
-              <input
-                required
-                placeholder="Name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full bg-white/5 p-3 text-sm outline-none"
-              />
-              <input
-                required
-                type="email"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-white/5 p-3 text-sm outline-none"
-              />
-              <input
-                placeholder="Phone"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className="w-full bg-white/5 p-3 text-sm outline-none"
-              />
+              {(["name", "email", "phone"] as const).map((field) => (
+                <input
+                  key={field}
+                  required={field !== "phone"}
+                  type={field === "email" ? "email" : "text"}
+                  placeholder={field[0].toUpperCase() + field.slice(1)}
+                  value={field === "name" ? name : field === "email" ? email : phone}
+                  onChange={(e) => {
+                    if (field === "name") setName(e.target.value);
+                    if (field === "email") setEmail(e.target.value);
+                    if (field === "phone") setPhone(e.target.value);
+                  }}
+                  className="w-full p-3 text-sm outline-none"
+                  style={{ background: brand.surface, borderRadius: radius, color: brand.foreground }}
+                />
+              ))}
               <button
                 type="submit"
                 disabled={pending}
-                className="bg-[#0f766e] px-5 py-3 text-sm font-semibold disabled:opacity-40"
+                className="px-5 py-3 text-sm font-semibold disabled:opacity-40"
+                style={{ background: brand.primary, color: brand.foreground, borderRadius: radius }}
               >
                 {pending ? "Processing…" : "Confirm booking & pay"}
               </button>
@@ -192,14 +224,23 @@ export function LiveVentureSite({
 
         {tab === "contact" && (
           <section className="max-w-lg">
-            <h2 className="font-[family-name:var(--font-display)] text-3xl">Contact / lead form</h2>
-            <form onSubmit={onLead} className="mt-6 space-y-3">
+            <h2 className="text-3xl" style={{ fontFamily: brand.fontDisplay }}>
+              Contact / lead form
+            </h2>
+            <form
+              onSubmit={(e: FormEvent) => {
+                e.preventDefault();
+                submit("lead");
+              }}
+              className="mt-6 space-y-3"
+            >
               <input
                 required
                 placeholder="Name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full bg-white/5 p-3 text-sm outline-none"
+                className="w-full p-3 text-sm outline-none"
+                style={{ background: brand.surface, borderRadius: radius }}
               />
               <input
                 required
@@ -207,18 +248,21 @@ export function LiveVentureSite({
                 placeholder="Email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-white/5 p-3 text-sm outline-none"
+                className="w-full p-3 text-sm outline-none"
+                style={{ background: brand.surface, borderRadius: radius }}
               />
               <input
                 placeholder="Phone"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                className="w-full bg-white/5 p-3 text-sm outline-none"
+                className="w-full p-3 text-sm outline-none"
+                style={{ background: brand.surface, borderRadius: radius }}
               />
               <button
                 type="submit"
                 disabled={pending}
-                className="bg-[#0f766e] px-5 py-3 text-sm font-semibold disabled:opacity-40"
+                className="px-5 py-3 text-sm font-semibold disabled:opacity-40"
+                style={{ background: brand.primary, color: brand.foreground, borderRadius: radius }}
               >
                 {pending ? "Sending…" : "Send lead"}
               </button>
@@ -227,7 +271,11 @@ export function LiveVentureSite({
         )}
 
         {message && (
-          <p className="mt-8 border border-[#5eead4]/30 bg-[#0f766e]/20 p-4 text-sm" role="status">
+          <p
+            className="mt-8 border p-4 text-sm"
+            style={{ borderColor: brand.primary, background: brand.surface }}
+            role="status"
+          >
             {message}
           </p>
         )}

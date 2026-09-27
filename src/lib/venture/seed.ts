@@ -5,11 +5,13 @@ import {
   createBooking,
   createLead,
   createOrder,
+  getPreferences,
   getVenture,
   listServices,
   resetDb,
   saveExpense,
   saveLocation,
+  savePreferences,
   saveService,
   saveStaff,
   saveVenture,
@@ -28,6 +30,26 @@ export function seedMobileDetailingDemo() {
   venture.stage = "live";
   venture.updatedAt = new Date().toISOString();
   saveVenture(venture);
+
+  // Distinct ShineOn brand identity
+  const prefs = getPreferences(venture.id);
+  prefs.brand = {
+    ...prefs.brand,
+    displayName: "ShineOn",
+    tagline: "Condo car care, on your schedule",
+    logoText: "SO",
+    primary: "#0d9488",
+    secondary: "#134e4a",
+    accent: "#f59e0b",
+    background: "#042f2e",
+    foreground: "#ecfdf5",
+    surface: "rgba(255,255,255,0.06)",
+    muted: "rgba(236,253,245,0.7)",
+    radius: "soft",
+    tone: "warm",
+    applyToAdmin: true,
+  };
+  savePreferences(prefs);
 
   for (const offer of venture.blueprint.offers) {
     saveService({

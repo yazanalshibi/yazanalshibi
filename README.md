@@ -36,7 +36,15 @@ npm run dev
 
 Mobile car detailing membership for Toronto condo residents — CRM, booking, payments, membership, reviews, staff, locations.
 
-## Architecture (V0.1)
+## Local-first privacy, brand & UX (V0.1+)
+
+- **Local-first:** all data in `data/venture-os.json`
+- **Cloud share:** choose categories + retention (1d → until revoked); mirrors in `data/cloud/`
+- **Brand identity:** colors, fonts, radius, tone — applied to live site (optional admin)
+- **Flexible dashboard:** show/hide/reorder widgets, compact metrics, density
+- **Behavior-smart UX:** navigation patterns → enhancement suggestions on the dashboard
+
+Configure at `/os/[slug]/settings`.
 
 - **Venture Engine** — idea → blueprint → modules → pages
 - **Native CRM** — leads, customers, sources, LTV

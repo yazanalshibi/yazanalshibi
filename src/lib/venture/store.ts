@@ -3,6 +3,7 @@ import path from "node:path";
 import { randomUUID } from "node:crypto";
 import type {
   Booking,
+  CloudMirror,
   Customer,
   DbShape,
   Expense,
@@ -15,9 +16,12 @@ import type {
   Venture,
   VentureEvent,
 } from "./types";
+import type { BehaviorHit, VenturePreferences } from "./preferences";
+import { defaultPreferences } from "./preferences";
 
 const DATA_DIR = path.join(process.cwd(), "data");
 const DB_PATH = path.join(DATA_DIR, "venture-os.json");
+const CLOUD_DIR = path.join(DATA_DIR, "cloud");
 
 function emptyDb(): DbShape {
   return {
@@ -32,21 +36,34 @@ function emptyDb(): DbShape {
     locations: [],
     events: [],
     recommendations: [],
+    preferences: [],
+    behavior: [],
+    cloudMirrors: [],
   };
+}
+
+function migrate(db: DbShape): DbShape {
+  if (!db.preferences) db.preferences = [];
+  if (!db.behavior) db.behavior = [];
+  if (!db.cloudMirrors) db.cloudMirrors = [];
+  return db;
 }
 
 function ensureDb(): DbShape {
   if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+  if (!fs.existsSync(CLOUD_DIR)) fs.mkdirSync(CLOUD_DIR, { recursive: true });
   if (!fs.existsSync(DB_PATH)) {
     const db = emptyDb();
     fs.writeFileSync(DB_PATH, JSON.stringify(db, null, 2));
     return db;
   }
-  return JSON.parse(fs.readFileSync(DB_PATH, "utf8")) as DbShape;
+  const raw = JSON.parse(fs.readFileSync(DB_PATH, "utf8")) as DbShape;
+  return migrate(raw);
 }
 
 function saveDb(db: DbShape) {
   if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+  if (!fs.existsSync(CLOUD_DIR)) fs.mkdirSync(CLOUD_DIR, { recursive: true });
   fs.writeFileSync(DB_PATH, JSON.stringify(db, null, 2));
 }
 
@@ -73,7 +90,103 @@ export function saveVenture(venture: Venture): Venture {
     const idx = db.ventures.findIndex((v) => v.id === venture.id);
     if (idx >= 0) db.ventures[idx] = venture;
     else db.ventures.push(venture);
+    // ensure preferences exist
+    if (!db.preferences.find((p) => p.ventureId === venture.id)) {
+      db.preferences.push(defaultPreferences(venture.id, venture.name));
+    }
     return venture;
+  });
+}
+
+export function getPreferences(ventureId: string): VenturePreferences {
+  const db = ensureDb();
+  const existing = db.preferences.find((p) => p.ventureId === ventureId);
+  if (existing) return existing;
+  const venture = db.ventures.find((v) => v.id === ventureId);
+  return defaultPreferences(ventureId, venture?.name || "Venture");
+}
+
+export function savePreferences(prefs: VenturePreferences): VenturePreferences {
+  return mutate((db) => {
+    prefs.updatedAt = new Date().toISOString();
+    const idx = db.preferences.findIndex((p) => p.ventureId === prefs.ventureId);
+    if (idx >= 0) db.preferences[idx] = prefs;
+    else db.preferences.push(prefs);
+    const venture = db.ventures.find((v) => v.id === prefs.ventureId);
+    if (venture) {
+      venture.brand = prefs.brand;
+      venture.updatedAt = prefs.updatedAt;
+    }
+    return prefs;
+  });
+}
+
+export function trackBehavior(
+  ventureId: string,
+  path: string,
+  action: string,
+  meta?: Record<string, unknown>,
+): BehaviorHit {
+  return mutate((db) => {
+    const hit: BehaviorHit = {
+      id: randomUUID(),
+      ventureId,
+      path,
+      action,
+      meta,
+      createdAt: new Date().toISOString(),
+    };
+    db.behavior.push(hit);
+    // keep last 2000
+    if (db.behavior.length > 2000) {
+      db.behavior = db.behavior.slice(-2000);
+    }
+    return hit;
+  });
+}
+
+export function listBehavior(ventureId: string): BehaviorHit[] {
+  return ensureDb()
+    .behavior.filter((b) => b.ventureId === ventureId)
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+}
+
+export function listCloudMirrors(ventureId: string): CloudMirror[] {
+  return ensureDb().cloudMirrors.filter((m) => m.ventureId === ventureId);
+}
+
+export function replaceCloudMirrors(ventureId: string, mirrors: CloudMirror[]) {
+  return mutate((db) => {
+    db.cloudMirrors = [
+      ...db.cloudMirrors.filter((m) => m.ventureId !== ventureId),
+      ...mirrors,
+    ];
+    // also write per-venture cloud snapshot file (local "cloud" mirror)
+    const file = path.join(CLOUD_DIR, `${ventureId}.json`);
+    fs.writeFileSync(
+      file,
+      JSON.stringify(
+        {
+          ventureId,
+          syncedAt: new Date().toISOString(),
+          mirrors,
+        },
+        null,
+        2,
+      ),
+    );
+    return mirrors;
+  });
+}
+
+export function purgeExpiredCloudMirrors(now = Date.now()) {
+  return mutate((db) => {
+    const before = db.cloudMirrors.length;
+    db.cloudMirrors = db.cloudMirrors.filter((m) => {
+      if (!m.expiresAt) return true;
+      return new Date(m.expiresAt).getTime() > now;
+    });
+    return { removed: before - db.cloudMirrors.length, remaining: db.cloudMirrors.length };
   });
 }
 
@@ -277,15 +390,8 @@ export function saveRecommendation(rec: Recommendation): Recommendation {
   });
 }
 
-export function replaceVentureData(partial: Partial<DbShape>) {
-  return mutate((db) => {
-    Object.assign(db, partial);
-    return db;
-  });
-}
-
 export function resetDb(seed?: DbShape) {
   saveDb(seed || emptyDb());
 }
 
-export { DB_PATH };
+export { DB_PATH, DATA_DIR, CLOUD_DIR };
