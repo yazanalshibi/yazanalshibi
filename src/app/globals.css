@@ -1,0 +1,111 @@
+@import "tailwindcss";
+
+:root {
+  --ink: #12202b;
+  --foam: #f3f7f6;
+  --mist: #d7ebe6;
+  --teal: #0f766e;
+  --teal-deep: #0b4f4a;
+  --sand: #efe6d6;
+  --signal: #c45c26;
+  --background: var(--foam);
+  --foreground: var(--ink);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-body);
+  --font-mono: var(--font-mono);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-body), system-ui, sans-serif;
+}
+
+.atmosphere {
+  background:
+    radial-gradient(ellipse 90% 60% at 10% -10%, rgba(15, 118, 110, 0.22), transparent 55%),
+    radial-gradient(ellipse 70% 50% at 90% 10%, rgba(196, 92, 38, 0.12), transparent 50%),
+    linear-gradient(165deg, #e7f3f0 0%, #f3f7f6 42%, #efe8dc 100%);
+}
+
+.grid-fade {
+  background-image:
+    linear-gradient(rgba(18, 32, 43, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(18, 32, 43, 0.05) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: linear-gradient(to bottom, black 30%, transparent 95%);
+}
+
+.hero-visual {
+  background:
+    linear-gradient(135deg, rgba(15, 118, 110, 0.35), rgba(18, 32, 43, 0.55)),
+    url("/hero-workbench.svg") center/cover no-repeat;
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes drift {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes pulse-line {
+  0%,
+  100% {
+    stroke-dashoffset: 120;
+  }
+  50% {
+    stroke-dashoffset: 0;
+  }
+}
+
+.reveal {
+  animation: rise-in 0.8s ease both;
+}
+
+.reveal-delay-1 {
+  animation-delay: 0.12s;
+}
+
+.reveal-delay-2 {
+  animation-delay: 0.24s;
+}
+
+.reveal-delay-3 {
+  animation-delay: 0.36s;
+}
+
+.float-soft {
+  animation: drift 7s ease-in-out infinite;
+}
+
+.stroke-draw path {
+  stroke-dasharray: 140;
+  animation: pulse-line 3.5s ease-in-out infinite;
+}
