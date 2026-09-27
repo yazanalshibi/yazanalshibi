@@ -36,7 +36,13 @@ npm run dev
 
 Mobile car detailing membership for Toronto condo residents — CRM, booking, payments, membership, reviews, staff, locations.
 
-## Local-first privacy, brand & UX (V0.1+)
+## MVP Discovery → Launchpad
+
+1. **/create** — 8 questions lock the MVP shape  
+2. System recommends infrastructure connections (domain, Stripe, commerce, Google, email, hosting)  
+3. **LVOS Bot Terminal** runs our own bots (scaffold, connect, smoke-test) — not third-party devices  
+4. **3–5 experts** matched to your milestone, industry, and MVP needs  
+5. **/os/[slug]/launchpad** — connect providers in minutes and launch
 
 - **Local-first:** all data in `data/venture-os.json`
 - **Cloud share:** choose categories + retention (1d → until revoked); mirrors in `data/cloud/`

@@ -7,6 +7,7 @@ import type {
   Customer,
   DbShape,
   Expense,
+  LaunchPack,
   Lead,
   Location,
   Order,
@@ -39,6 +40,7 @@ function emptyDb(): DbShape {
     preferences: [],
     behavior: [],
     cloudMirrors: [],
+    launchPacks: [],
   };
 }
 
@@ -46,6 +48,7 @@ function migrate(db: DbShape): DbShape {
   if (!db.preferences) db.preferences = [];
   if (!db.behavior) db.behavior = [];
   if (!db.cloudMirrors) db.cloudMirrors = [];
+  if (!db.launchPacks) db.launchPacks = [];
   return db;
 }
 
@@ -387,6 +390,20 @@ export function saveRecommendation(rec: Recommendation): Recommendation {
   return mutate((db) => {
     db.recommendations.unshift(rec);
     return rec;
+  });
+}
+
+export function getLaunchPack(ventureId: string): LaunchPack | null {
+  return ensureDb().launchPacks.find((p) => p.ventureId === ventureId) || null;
+}
+
+export function saveLaunchPack(pack: LaunchPack): LaunchPack {
+  return mutate((db) => {
+    pack.updatedAt = new Date().toISOString();
+    const idx = db.launchPacks.findIndex((p) => p.ventureId === pack.ventureId);
+    if (idx >= 0) db.launchPacks[idx] = pack;
+    else db.launchPacks.push(pack);
+    return pack;
   });
 }
 

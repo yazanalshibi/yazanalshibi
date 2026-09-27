@@ -198,6 +198,56 @@ export type CloudMirror = {
   payload: unknown;
 };
 
+export type LaunchPack = {
+  ventureId: string;
+  answers: Record<string, string | string[]>;
+  mvpSpec: {
+    summary: string;
+    customer: string;
+    coreLoop: string;
+    monetization: string;
+    channels: string[];
+    fulfillment: string;
+    mustHaves: string[];
+    constraint: string;
+    recommendedModules: string[];
+    milestoneFocus: string;
+  };
+  connections: {
+    id: string;
+    name: string;
+    why: string;
+    setupMinutes: number;
+    status: string;
+    connectUrl: string;
+    docsHint: string;
+    botTask: string;
+    connected?: boolean;
+    connectedAt?: string;
+  }[];
+  experts: {
+    id: string;
+    name: string;
+    title: string;
+    blurb: string;
+    rateHint: string;
+    timezone: string;
+    why: string;
+    score: number;
+  }[];
+  botJobs: {
+    id: string;
+    task: string;
+    label: string;
+    status: string;
+    log: string[];
+    connectionId?: string;
+    createdAt: string;
+    updatedAt: string;
+  }[];
+  updatedAt: string;
+};
+
 export type DbShape = {
   ventures: Venture[];
   customers: Customer[];
@@ -213,4 +263,5 @@ export type DbShape = {
   preferences: VenturePreferences[];
   behavior: BehaviorHit[];
   cloudMirrors: CloudMirror[];
+  launchPacks: LaunchPack[];
 };

@@ -3,6 +3,7 @@ import type { BrandIdentity } from "@/lib/venture/preferences";
 
 const LINKS = [
   { href: "", label: "Dashboard" },
+  { href: "/launchpad", label: "Launchpad" },
   { href: "/blueprint", label: "Blueprint" },
   { href: "/builder", label: "Builder" },
   { href: "/customers", label: "Customers" },

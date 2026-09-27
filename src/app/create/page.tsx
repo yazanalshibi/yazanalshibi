@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { DiscoveryQuiz } from "@/components/venture/DiscoveryQuiz";
 import { CreateVentureForm } from "@/components/venture/CreateVentureForm";
 
 export const metadata = {
@@ -12,15 +13,25 @@ export default function CreatePage() {
         Live Venture OS
       </Link>
       <h1 className="mt-6 max-w-2xl font-[family-name:var(--font-display)] text-4xl leading-tight sm:text-5xl">
-        Create Venture
+        What does your MVP look like?
       </h1>
       <p className="mt-3 max-w-xl text-[var(--ink)]/65">
-        Describe the business. AI structures a blueprint, recommends modules, and
-        prepares a live customer experience.
+        Answer 8 short questions. We lock the MVP shape, spin our bot terminal,
+        hand you domain/payments/Google/commerce connections, and recommend 3–5
+        experts for your milestones.
       </p>
       <div className="mt-10">
-        <CreateVentureForm />
+        <DiscoveryQuiz />
       </div>
+
+      <details className="mx-auto mt-16 max-w-2xl border-t border-[var(--ink)]/10 pt-8">
+        <summary className="cursor-pointer text-sm text-[var(--ink)]/55">
+          Prefer a one-line idea or ShineOn demo instead?
+        </summary>
+        <div className="mt-6">
+          <CreateVentureForm />
+        </div>
+      </details>
     </div>
   );
 }

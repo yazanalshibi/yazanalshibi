@@ -48,7 +48,7 @@ export default function Home() {
                 href="/create"
                 className="bg-[var(--teal)] px-6 py-3 text-sm font-semibold text-[var(--foam)]"
               >
-                Start a venture
+                Answer 8 questions · launch ASAP
               </Link>
               <Link
                 href="/create"
