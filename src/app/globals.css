@@ -105,7 +105,7 @@ body {
   animation: drift 7s ease-in-out infinite;
 }
 
-.stroke-draw path {
-  stroke-dasharray: 140;
-  animation: pulse-line 3.5s ease-in-out infinite;
+.vr-friendly button,
+.vr-meta button {
+  min-height: 3rem;
 }

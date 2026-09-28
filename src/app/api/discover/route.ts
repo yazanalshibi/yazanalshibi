@@ -2,12 +2,17 @@ import { NextResponse } from "next/server";
 import { randomUUID } from "node:crypto";
 import { buildMvpSpec, type DiscoveryAnswerMap } from "@/lib/venture/discovery";
 import { recommendInfrastructure } from "@/lib/venture/infrastructure";
-import { matchExperts } from "@/lib/venture/experts";
+import { matchExperts, sessionAdvisorRecommendation } from "@/lib/venture/experts";
 import { planBotJobs } from "@/lib/venture/bots";
 import { createVentureFromIdea } from "@/lib/venture/blueprint";
+import { collectGeoIndustryIntel } from "@/lib/venture/geo-intel";
+import { buildGovApplications, regionQuickLinks } from "@/lib/venture/session";
+import { COLOR_KITS, createBuildSession } from "@/lib/venture/build-session";
 import {
+  getPreferences,
   listVentures,
   saveLaunchPack,
+  savePreferences,
   saveService,
   saveVenture,
   trackEvent,
@@ -23,16 +28,32 @@ export async function POST(req: Request) {
 
   const spec = buildMvpSpec(answers);
   const industry = detectIndustry(String(answers.idea));
+  const geoIntel = collectGeoIndustryIntel(
+    String(answers.geo || ""),
+    industry.id,
+    String(answers.idea),
+  );
+  const govApplications = buildGovApplications(geoIntel);
   const connections = recommendInfrastructure(spec);
   const experts = matchExperts(spec, industry.id, 5);
+  const sessionAdvisor = sessionAdvisorRecommendation(experts, new Date().toDateString());
 
   let venture = createVentureFromIdea(String(answers.idea));
-  // align modules with discovery
   venture.modules = Array.from(
     new Set([
       ...venture.modules,
       ...spec.recommendedModules.filter((m) =>
-        ["website", "crm", "booking", "payments", "membership", "reviews", "analytics", "staff", "locations"].includes(m),
+        [
+          "website",
+          "crm",
+          "booking",
+          "payments",
+          "membership",
+          "reviews",
+          "analytics",
+          "staff",
+          "locations",
+        ].includes(m),
       ),
     ]),
   ) as typeof venture.modules;
@@ -55,6 +76,16 @@ export async function POST(req: Request) {
     });
   }
 
+  const buildSession = createBuildSession(
+    venture.name,
+    spec.recommendedModules,
+    sessionAdvisor.tip,
+  );
+  // persist brand from session kit
+  const prefs = getPreferences(venture.id);
+  prefs.brand = buildSession.brand;
+  savePreferences(prefs);
+
   const botJobs = planBotJobs(venture.id, spec, connections);
   const pack = saveLaunchPack({
     ventureId: venture.id,
@@ -63,13 +94,29 @@ export async function POST(req: Request) {
     connections: connections.map((c) => ({ ...c, connected: false })),
     experts,
     botJobs,
+    geoIntel: {
+      ...geoIntel,
+      quickLinks: regionQuickLinks(geoIntel.regionId),
+    },
+    govApplications,
+    buildSession: {
+      ...buildSession,
+      colorKits: COLOR_KITS,
+    },
+    sessionAdvisor,
     updatedAt: new Date().toISOString(),
   });
 
   trackEvent(venture.id, "discovery_completed", {
     modules: spec.recommendedModules,
     constraint: spec.constraint,
+    geo: geoIntel.regionId,
+    industry: industry.id,
   });
 
-  return NextResponse.json({ venture, launchPack: pack, industry: industry.id });
+  return NextResponse.json({
+    venture,
+    launchPack: pack,
+    industry: industry.id,
+  });
 }

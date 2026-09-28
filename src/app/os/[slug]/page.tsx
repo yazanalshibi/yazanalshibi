@@ -6,6 +6,7 @@ import { computeMetrics, ventureHealth } from "@/lib/venture/advisor";
 import { cloudStatus } from "@/lib/venture/privacy";
 import { refreshUxSuggestions } from "@/lib/venture/ux";
 import {
+  getLaunchPack,
   getPreferences,
   getVenture,
   listBookings,
@@ -13,6 +14,7 @@ import {
   listOrders,
   listRecommendations,
 } from "@/lib/venture/store";
+import { sessionAdvisorRecommendation } from "@/lib/venture/experts";
 
 export default async function OsDashboard({
   params,
@@ -34,6 +36,21 @@ export default async function OsDashboard({
   const orders = listOrders(venture.id);
   const recs = listRecommendations(venture.id);
   const cloud = cloudStatus(venture.id);
+  const pack = getLaunchPack(venture.id);
+  const sessionAdvisor =
+    pack?.sessionAdvisor ||
+    (pack?.experts?.length
+      ? sessionAdvisorRecommendation(
+          pack.experts.map((e) => ({
+            ...e,
+            specialties: [],
+            industries: [],
+            milestones: [],
+            sessionTip: e.sessionTip,
+          })),
+          `${venture.id}:${new Date().toDateString()}`,
+        )
+      : null);
 
   return (
     <>
@@ -52,6 +69,7 @@ export default async function OsDashboard({
         leads={leads}
         bookings={bookings}
         cloud={cloud}
+        sessionAdvisor={sessionAdvisor}
       />
       {/* keep orders referenced for future widgets without unused lint */}
       <span className="sr-only">{orders.length}</span>

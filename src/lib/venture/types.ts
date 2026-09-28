@@ -210,6 +210,7 @@ export type LaunchPack = {
     fulfillment: string;
     mustHaves: string[];
     constraint: string;
+    geo?: string;
     recommendedModules: string[];
     milestoneFocus: string;
   };
@@ -234,6 +235,7 @@ export type LaunchPack = {
     timezone: string;
     why: string;
     score: number;
+    sessionTip?: string;
   }[];
   botJobs: {
     id: string;
@@ -245,6 +247,25 @@ export type LaunchPack = {
     createdAt: string;
     updatedAt: string;
   }[];
+  geoIntel?: unknown;
+  govApplications?: {
+    id: string;
+    title: string;
+    category: string;
+    status: string;
+    agency: string;
+    applyUrl?: string;
+    checklist: string[];
+    why: string;
+    typicalDays: string;
+  }[];
+  buildSession?: unknown;
+  sessionAdvisor?: {
+    expertId: string;
+    name: string;
+    title: string;
+    tip: string;
+  };
   updatedAt: string;
 };
 

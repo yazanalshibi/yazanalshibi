@@ -16,9 +16,10 @@ export default function CreatePage() {
         What does your MVP look like?
       </h1>
       <p className="mt-3 max-w-xl text-[var(--ink)]/65">
-        Answer 8 short questions. We lock the MVP shape, spin our bot terminal,
-        hand you domain/payments/Google/commerce connections, and recommend 3–5
-        experts for your milestones.
+        Answer ~9 questions (including where you operate). We collect leading cost and
+        paperwork data, open an incorporation checklist, spin infrastructure + bots,
+        plug-and-play features/colors (VR-ready for Meta glasses), and seat 5 advisors
+        from the first build. Data stays local until you choose what to share.
       </p>
       <div className="mt-10">
         <DiscoveryQuiz />

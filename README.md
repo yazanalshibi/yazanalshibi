@@ -38,11 +38,13 @@ Mobile car detailing membership for Toronto condo residents — CRM, booking, pa
 
 ## MVP Discovery → Launchpad
 
-1. **/create** — 8 questions lock the MVP shape  
-2. System recommends infrastructure connections (domain, Stripe, commerce, Google, email, hosting)  
-3. **LVOS Bot Terminal** runs our own bots (scaffold, connect, smoke-test) — not third-party devices  
-4. **3–5 experts** matched to your milestone, industry, and MVP needs  
-5. **/os/[slug]/launchpad** — connect providers in minutes and launch
+1. **/create** — ~9 questions lock MVP shape + geolocation  
+2. **Leading data** by geo + industry: cost bands, paperwork, registrations, tech baseline  
+3. **Incorporation & gov applications** checklist with apply links inside the build  
+4. **Build session** plug-and-play features + color kits; optional **Meta glasses / Quest VR** mode  
+5. Infrastructure connections + **LVOS Bot Terminal** (scaffold, connect, smoke-test)  
+6. **5 advisors** from the first build + a rotating session recommendation tip  
+7. **/os/[slug]/launchpad** — connect rails, toggle features, track filings, launch
 
 - **Local-first:** all data in `data/venture-os.json`
 - **Cloud share:** choose categories + retention (1d → until revoked); mirrors in `data/cloud/`
@@ -50,7 +52,7 @@ Mobile car detailing membership for Toronto condo residents — CRM, booking, pa
 - **Flexible dashboard:** show/hide/reorder widgets, compact metrics, density
 - **Behavior-smart UX:** navigation patterns → enhancement suggestions on the dashboard
 
-Configure at `/os/[slug]/settings`.
+Configure privacy/share at `/os/[slug]/settings`.
 
 - **Venture Engine** — idea → blueprint → modules → pages
 - **Native CRM** — leads, customers, sources, LTV

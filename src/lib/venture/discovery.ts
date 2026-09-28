@@ -9,7 +9,7 @@ export type DiscoveryQuestion = {
   required?: boolean;
 };
 
-/** 8 focused questions — enough to lock the MVP shape without stalling launch */
+/** 9 focused questions — lock MVP + geo for costs/paperwork */
 export const DISCOVERY_QUESTIONS: DiscoveryQuestion[] = [
   {
     id: "idea",
@@ -17,6 +17,23 @@ export const DISCOVERY_QUESTIONS: DiscoveryQuestion[] = [
     help: "Be concrete: who + what outcome.",
     type: "text",
     required: true,
+  },
+  {
+    id: "geo",
+    prompt: "Where will you incorporate and operate first?",
+    help: "We use this for leading cost, paperwork, and registration data.",
+    type: "single",
+    required: true,
+    options: [
+      { value: "ca-on", label: "Canada — Ontario (Toronto)" },
+      { value: "ca-bc", label: "Canada — British Columbia" },
+      { value: "us-ny", label: "USA — New York" },
+      { value: "us-ca", label: "USA — California" },
+      { value: "us-tx", label: "USA — Texas" },
+      { value: "uk", label: "United Kingdom" },
+      { value: "ae-dubai", label: "UAE — Dubai" },
+      { value: "other", label: "Other / global remote" },
+    ],
   },
   {
     id: "customer",
@@ -116,12 +133,14 @@ export type MvpSpec = {
   fulfillment: string;
   mustHaves: string[];
   constraint: string;
+  geo: string;
   recommendedModules: string[];
   milestoneFocus: string;
 };
 
 export function buildMvpSpec(answers: DiscoveryAnswerMap): MvpSpec {
   const idea = String(answers.idea || "").trim();
+  const geo = String(answers.geo || "other");
   const customer = String(answers.customer || "smb");
   const pain = String(answers.pain || "").trim();
   const offer = String(answers.offer || "one_time");
@@ -173,6 +192,7 @@ export function buildMvpSpec(answers: DiscoveryAnswerMap): MvpSpec {
     fulfillment,
     mustHaves,
     constraint,
+    geo,
     recommendedModules: [...modules],
     milestoneFocus,
   };

@@ -45,6 +45,7 @@ export function FlexibleDashboard({
   leads,
   bookings,
   cloud,
+  sessionAdvisor,
 }: {
   slug: string;
   ventureName: string;
@@ -56,6 +57,7 @@ export function FlexibleDashboard({
   leads: { name: string; status: string }[];
   bookings: { status: string; startsAt: string }[];
   cloud: CloudInfo;
+  sessionAdvisor?: { name: string; title: string; tip: string } | null;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -136,6 +138,9 @@ export function FlexibleDashboard({
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
+          <Link href={`/os/${slug}/launchpad`} className="border border-[var(--ink)]/15 px-4 py-2 text-sm">
+            Launchpad
+          </Link>
           <Link href={`/os/${slug}/settings`} className="border border-[var(--ink)]/15 px-4 py-2 text-sm">
             Customize
           </Link>
@@ -147,6 +152,18 @@ export function FlexibleDashboard({
           )}
         </div>
       </div>
+
+      {sessionAdvisor && (
+        <aside className="border border-[var(--teal)]/30 bg-[var(--mist)]/50 p-4">
+          <p className="text-xs uppercase tracking-[0.16em] text-[var(--teal-deep)]">
+            Session advisor · {sessionAdvisor.name} · {sessionAdvisor.title}
+          </p>
+          <p className="mt-2 text-sm text-[var(--ink)]/80">{sessionAdvisor.tip}</p>
+          <Link href={`/os/${slug}/launchpad`} className="mt-3 inline-block text-sm text-[var(--teal)]">
+            Ask advisors on Launchpad →
+          </Link>
+        </aside>
+      )}
 
       <div className={`grid ${gap}`}>
         {widgets.map((w) => {
