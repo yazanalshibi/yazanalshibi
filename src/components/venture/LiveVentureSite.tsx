@@ -99,8 +99,14 @@ function LiveVentureInner({
           {(
             [
               ["home", "Home"],
-              ["services", "Services"],
-              ["book", "Book"],
+              [
+                "services",
+                venture.blueprint.industryId === "edtech" ? "Programs" : "Services",
+              ],
+              [
+                "book",
+                venture.blueprint.industryId === "edtech" ? "Enroll" : "Book",
+              ],
               ["contact", "Contact"],
             ] as const
           ).map(([id, label]) => (
@@ -180,7 +186,11 @@ function LiveVentureInner({
             }}
           >
             <h2 className={vr ? "text-4xl" : "text-3xl"} style={{ fontFamily: brand.fontDisplay }}>
-              {tab === "book" ? "Book & pay" : "Contact"}
+              {tab === "book"
+                ? venture.blueprint.industryId === "edtech"
+                  ? "Enroll & pay"
+                  : "Book & pay"
+                : "Contact"}
             </h2>
             {tab === "book" && (
               <select
@@ -226,7 +236,13 @@ function LiveVentureInner({
               className={`font-semibold disabled:opacity-40 ${btnPad}`}
               style={{ background: brand.primary, borderRadius: radius }}
             >
-              {pending ? "…" : tab === "book" ? "Confirm booking & pay" : "Send lead"}
+              {pending
+                ? "…"
+                : tab === "book"
+                  ? venture.blueprint.industryId === "edtech"
+                    ? "Confirm enrollment & pay"
+                    : "Confirm booking & pay"
+                  : "Send lead"}
             </button>
           </form>
         )}

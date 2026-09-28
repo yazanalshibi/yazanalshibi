@@ -23,6 +23,17 @@ function titleFromIdea(idea: string): string {
   return cleaned || "New Venture";
 }
 
+function isKidsBusinessSchool(idea: string, industryId: string): boolean {
+  const lower = idea.toLowerCase();
+  return (
+    (/kid|kids|child|children|tween|youth|junior/.test(lower) &&
+      /business|entrepreneur|startup|venture|money|finance/.test(lower) &&
+      /school|academy|course|class|camp|learn|platform|club/.test(lower)) ||
+    /kidpreneur|young entrepreneur|business school for kids/.test(lower) ||
+    (industryId === "edtech" && /kid|child|youth|junior/.test(lower))
+  );
+}
+
 export function buildBlueprint(idea: string): VentureBlueprint {
   const industry = detectIndustry(idea);
   const name = titleFromIdea(idea);
@@ -30,9 +41,10 @@ export function buildBlueprint(idea: string): VentureBlueprint {
 
   const isDetailing =
     /detail|car wash|auto|vehicle|mobile detailing/.test(lower) ||
-    industry.id === "proptech" && /condo|apartment/.test(lower);
+    (industry.id === "proptech" && /condo|apartment/.test(lower));
 
-  const detailing = isDetailing || /toronto|condo/.test(lower);
+  const detailing = isDetailing || (/toronto|condo/.test(lower) && /detail/.test(lower));
+  const kidsSchool = !detailing && isKidsBusinessSchool(idea, industry.id);
 
   const offers = detailing
     ? [
@@ -55,26 +67,47 @@ export function buildBlueprint(idea: string): VentureBlueprint {
           description: "Monthly exterior detail at your building.",
         },
       ]
-    : [
-        {
-          name: "Starter Offer",
-          type: "service" as const,
-          price: 49,
-          description: "Core paid offer that proves demand.",
-        },
-        {
-          name: "Growth Package",
-          type: "package" as const,
-          price: 99,
-          description: "Higher-touch package for serious buyers.",
-        },
-        {
-          name: "Membership",
-          type: "package" as const,
-          price: 79,
-          description: "Recurring plan to lock retention early.",
-        },
-      ];
+    : kidsSchool
+      ? [
+          {
+            name: "Trial Class",
+            type: "service" as const,
+            price: 29,
+            description: "One live 45-min intro: idea → first customer sketch (ages 8–14).",
+          },
+          {
+            name: "Mini-Venture Sprint",
+            type: "package" as const,
+            price: 149,
+            description: "4-week cohort: pitch, price, sell, and reflect with a mentor.",
+          },
+          {
+            name: "Campus Membership",
+            type: "package" as const,
+            price: 59,
+            description: "Monthly access to lessons, live clubs, and parent progress notes.",
+          },
+        ]
+      : [
+          {
+            name: "Starter Offer",
+            type: "service" as const,
+            price: 49,
+            description: "Core paid offer that proves demand.",
+          },
+          {
+            name: "Growth Package",
+            type: "package" as const,
+            price: 99,
+            description: "Higher-touch package for serious buyers.",
+          },
+          {
+            name: "Membership",
+            type: "package" as const,
+            price: 79,
+            description: "Recurring plan to lock retention early.",
+          },
+        ];
 
   const recommendedModules: ModuleId[] = [
     "website",
@@ -82,8 +115,44 @@ export function buildBlueprint(idea: string): VentureBlueprint {
     "booking",
     "payments",
     "analytics",
-    ...(detailing ? (["membership", "reviews", "staff", "locations"] as ModuleId[]) : []),
+    ...(detailing || kidsSchool
+      ? (["membership", "reviews", "staff", "locations"] as ModuleId[])
+      : []),
   ];
+
+  if (kidsSchool) {
+    return {
+      name: "Venture Kids Academy",
+      industry: "EdTech — youth entrepreneurship",
+      industryId: "edtech",
+      description: idea.trim(),
+      market: "Parents of ages 8–14 who want practical money & business skills",
+      customer: "Parents buying learning for curious kids (ages 8–14)",
+      problem:
+        "Kids get generic coding camps, not a clear path to invent, price, and sell something real",
+      solution:
+        "Short courses + live clubs where kids run mini-ventures; parents track progress",
+      revenueModel: "Trial class + cohort sprint + monthly Campus Membership",
+      channels: [
+        "Parent Instagram / TikTok",
+        "School & after-school partners",
+        "Library / community workshops",
+      ],
+      personas: ["Busy parents seeking enrichment", "Curious 8–14 builders"],
+      offers,
+      journey: [
+        "Parent finds trial class",
+        "Landing page",
+        "Enroll / book trial",
+        "Payment",
+        "Kid joins live session",
+        "Mini-venture homework",
+        "Parent progress note",
+        "Membership invite",
+      ],
+      recommendedModules,
+    };
+  }
 
   return {
     name: detailing ? "ShineOn Mobile Detailing" : name,
@@ -126,6 +195,41 @@ export function buildBlueprint(idea: string): VentureBlueprint {
 }
 
 export function generatePages(blueprint: VentureBlueprint): VentureSitePage[] {
+  const kids = blueprint.industryId === "edtech" && /kid|youth|venture kids/i.test(blueprint.name + blueprint.industry);
+
+  if (kids) {
+    return [
+      {
+        slug: "home",
+        title: "Home",
+        headline: "Business school for kids who build real things",
+        body: `${blueprint.solution}. Parents enroll. Kids invent, price, sell, and learn — ages 8–14. Safe, short sessions. Real mini-ventures, not busywork.`,
+        cta: "Enroll in a trial class",
+      },
+      {
+        slug: "services",
+        title: "Programs",
+        headline: "Programs & membership",
+        body: blueprint.offers.map((o) => `${o.name} — $${o.price}: ${o.description}`).join("\n"),
+        cta: "Choose a program",
+      },
+      {
+        slug: "pricing",
+        title: "Pricing",
+        headline: "Parent-friendly pricing",
+        body: "Start with a low-cost trial. Upgrade to a cohort sprint or monthly Campus Membership. Cancel anytime. Built with under-13 privacy defaults.",
+        cta: "See programs",
+      },
+      {
+        slug: "contact",
+        title: "Contact",
+        headline: "Talk to the campus team",
+        body: "Tell us your child’s age and city. We’ll recommend a trial class and send parent FAQs (COPPA-aware).",
+        cta: "Ask a question",
+      },
+    ];
+  }
+
   return [
     {
       slug: "home",

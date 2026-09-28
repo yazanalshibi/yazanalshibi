@@ -83,6 +83,15 @@ export const COLOR_KITS: ColorKit[] = [
     background: "#0f172a",
     foreground: "#fff1f2",
   },
+  {
+    id: "campus_sky",
+    name: "Campus Sky",
+    primary: "#0ea5e9",
+    secondary: "#0c4a6e",
+    accent: "#fbbf24",
+    background: "#0b1f2a",
+    foreground: "#f0f9ff",
+  },
 ];
 
 export function defaultPlugFeatures(modules: string[]): PlugFeature[] {
@@ -123,8 +132,9 @@ export function createBuildSession(
   ventureName: string,
   modules: string[],
   advisorTip: string,
+  preferredKitId?: string,
 ): BuildSession {
-  const kit = COLOR_KITS[0];
+  const kit = COLOR_KITS.find((k) => k.id === preferredKitId) || COLOR_KITS[0];
   return {
     features: defaultPlugFeatures(modules),
     colorKitId: kit.id,

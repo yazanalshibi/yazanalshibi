@@ -76,10 +76,15 @@ export async function POST(req: Request) {
     });
   }
 
+  const preferredKit =
+    industry.id === "edtech" || /kid|youth|academy/i.test(venture.name)
+      ? "campus_sky"
+      : undefined;
   const buildSession = createBuildSession(
     venture.name,
     spec.recommendedModules,
     sessionAdvisor.tip,
+    preferredKit,
   );
   // persist brand from session kit
   const prefs = getPreferences(venture.id);

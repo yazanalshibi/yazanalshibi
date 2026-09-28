@@ -231,6 +231,42 @@ function industryExtras(industryId: string): {
         tech: ["Catalog", "Checkout", "Shipping labels later", "Returns form"],
         signals: ["Post-purchase ops often pays before new storefronts"],
       };
+    case "edtech":
+      return {
+        label: "EdTech / youth learning",
+        costs: [
+          {
+            item: "First cohort mentor stipend",
+            lowUsd: 200,
+            highUsd: 2000,
+            note: "Pay one instructor for a 4-week pilot before hiring.",
+          },
+          {
+            item: "Parent marketing creatives",
+            lowUsd: 50,
+            highUsd: 800,
+            note: "Short video + landing proof for trial classes.",
+          },
+        ],
+        paperwork: [
+          {
+            id: "youth_privacy",
+            name: "Under-13 privacy policy + parental consent flow",
+            agency: "Internal / counsel",
+            why: "COPPA / local youth privacy — parents are the account holders in v1.",
+            difficulty: "moderate",
+            typicalDays: "3–14",
+          },
+        ],
+        tech: [
+          "Parent checkout",
+          "Class booking",
+          "Lesson progress (kid profile via parent)",
+          "Email/SMS reminders",
+          "Zoom/Meet link later",
+        ],
+        signals: ["Parents buy trials; kids retain when they ship a real mini-venture"],
+      };
     default:
       return {
         label: industryId,
