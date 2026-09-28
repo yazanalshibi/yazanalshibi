@@ -24,6 +24,10 @@ const DATA_DIR = path.join(process.cwd(), "data");
 const DB_PATH = path.join(DATA_DIR, "venture-os.json");
 const CLOUD_DIR = path.join(DATA_DIR, "cloud");
 
+/** In-memory fallback when the Workers runtime has no durable local filesystem */
+let memoryDb: DbShape | null = null;
+let fsAvailable: boolean | null = null;
+
 function emptyDb(): DbShape {
   return {
     ventures: [],
@@ -52,7 +56,26 @@ function migrate(db: DbShape): DbShape {
   return db;
 }
 
+function canUseFs(): boolean {
+  if (fsAvailable !== null) return fsAvailable;
+  try {
+    if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+    if (!fs.existsSync(CLOUD_DIR)) fs.mkdirSync(CLOUD_DIR, { recursive: true });
+    const probe = path.join(DATA_DIR, ".write-probe");
+    fs.writeFileSync(probe, "ok");
+    fs.unlinkSync(probe);
+    fsAvailable = true;
+  } catch {
+    fsAvailable = false;
+  }
+  return fsAvailable;
+}
+
 function ensureDb(): DbShape {
+  if (!canUseFs()) {
+    if (!memoryDb) memoryDb = emptyDb();
+    return migrate(memoryDb);
+  }
   if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
   if (!fs.existsSync(CLOUD_DIR)) fs.mkdirSync(CLOUD_DIR, { recursive: true });
   if (!fs.existsSync(DB_PATH)) {
@@ -65,6 +88,10 @@ function ensureDb(): DbShape {
 }
 
 function saveDb(db: DbShape) {
+  if (!canUseFs()) {
+    memoryDb = db;
+    return;
+  }
   if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
   if (!fs.existsSync(CLOUD_DIR)) fs.mkdirSync(CLOUD_DIR, { recursive: true });
   fs.writeFileSync(DB_PATH, JSON.stringify(db, null, 2));
@@ -164,20 +191,22 @@ export function replaceCloudMirrors(ventureId: string, mirrors: CloudMirror[]) {
       ...db.cloudMirrors.filter((m) => m.ventureId !== ventureId),
       ...mirrors,
     ];
-    // also write per-venture cloud snapshot file (local "cloud" mirror)
-    const file = path.join(CLOUD_DIR, `${ventureId}.json`);
-    fs.writeFileSync(
-      file,
-      JSON.stringify(
-        {
-          ventureId,
-          syncedAt: new Date().toISOString(),
-          mirrors,
-        },
-        null,
-        2,
-      ),
-    );
+    // also write per-venture cloud snapshot file when local FS is available
+    if (canUseFs()) {
+      const file = path.join(CLOUD_DIR, `${ventureId}.json`);
+      fs.writeFileSync(
+        file,
+        JSON.stringify(
+          {
+            ventureId,
+            syncedAt: new Date().toISOString(),
+            mirrors,
+          },
+          null,
+          2,
+        ),
+      );
+    }
     return mirrors;
   });
 }

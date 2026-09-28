@@ -70,6 +70,25 @@ npm install
 npm run dev
 ```
 
+### Cloudflare Workers
+
+This app builds with [OpenNext](https://opennext.js.org/cloudflare) for Cloudflare Workers (`yazanalshibi`).
+
+```bash
+npm run cf-build   # opennextjs-cloudflare build
+npm run preview    # local Workers runtime
+npm run deploy     # deploy to Cloudflare
+```
+
+`npm run build` on CI runs the OpenNext Workers bundle automatically. Locally it stays a plain `next build`.
+
+**Workers Builds (dashboard) recommended settings**
+- Build command: `npm run build` (or `npm run cf-build`)
+- Deploy command: `npx wrangler deploy` (or `npm run deploy`)
+- Non-production branch deploy: `npx wrangler versions upload` (or `npm run upload`)
+
+Local Node (`npm run dev`) still uses `data/venture-os.json`. On Workers without a writable FS, the store falls back to in-memory (ephemeral) so the OS stays runnable.
+
 ## What is intentionally NOT in V0.1
 
 Full accounting, payroll, franchise legal, investor network, native mobile apps, marketplace, dozens of autonomous agents — deferred per the product blueprint.
