@@ -320,13 +320,52 @@ export function LaunchpadClient({
         </section>
       )}
 
+      {pack.curriculum && (
+        <section className="border border-[var(--ink)]/10 bg-white/70 p-5">
+          <h2 className="font-[family-name:var(--font-display)] text-xl">
+            Curriculum · {pack.curriculum.title}
+          </h2>
+          <p className="mt-1 text-sm text-[var(--ink)]/60">
+            Building the learning solution — week-by-week outcomes for the first cohort.
+          </p>
+          <ol className="mt-4 space-y-3">
+            {pack.curriculum.weeks.map((w) => (
+              <li key={w.week} className="border border-[var(--ink)]/8 p-3">
+                <p className="text-xs uppercase tracking-[0.14em] text-[var(--ink)]/45">
+                  Week {w.week}
+                </p>
+                <p className="font-medium">{w.title}</p>
+                <p className="text-sm text-[var(--ink)]/65">{w.outcome}</p>
+              </li>
+            ))}
+          </ol>
+        </section>
+      )}
+
       <section className="border border-[var(--ink)]/10 bg-white/70 p-5">
-        <h2 className="font-[family-name:var(--font-display)] text-xl">
-          Infrastructure connections
-        </h2>
-        <p className="mt-1 text-sm text-[var(--ink)]/60">
-          Data stays local until you share categories in Settings. Connect rails in minutes.
-        </p>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h2 className="font-[family-name:var(--font-display)] text-xl">
+              Tools & infrastructure
+            </h2>
+            <p className="mt-1 text-sm text-[var(--ink)]/60">
+              Connect rails for this build. Toggle “Next projects” to carry tools forward.
+            </p>
+          </div>
+          <button
+            type="button"
+            className={`border border-[var(--ink)]/15 ${hit}`}
+            disabled={pending}
+            onClick={() => patch({ action: "refresh-tools" })}
+          >
+            Refresh tool recommendations
+          </button>
+        </div>
+        {pack.nextProjectTools && pack.nextProjectTools.length > 0 && (
+          <p className="mt-3 text-xs text-[var(--teal-deep)]">
+            Carried to next projects: {pack.nextProjectTools.join(" · ")}
+          </p>
+        )}
         <ul className="mt-4 space-y-3">
           {pack.connections.map((c) => (
             <li
@@ -337,7 +376,8 @@ export function LaunchpadClient({
                 <div className="flex flex-wrap items-center gap-2">
                   <p className="font-medium">{c.name}</p>
                   <span className="text-[10px] uppercase tracking-[0.12em] text-[var(--ink)]/45">
-                    {c.status} · ~{c.setupMinutes} min
+                    {c.status}
+                    {c.category ? ` · ${c.category}` : ""} · ~{c.setupMinutes} min
                   </span>
                   {c.connected && (
                     <span className="bg-[var(--teal)]/15 px-2 py-0.5 text-[10px] uppercase text-[var(--teal-deep)]">
@@ -346,6 +386,21 @@ export function LaunchpadClient({
                   )}
                 </div>
                 <p className="mt-1 text-sm text-[var(--ink)]/65">{c.why}</p>
+                <label className="mt-2 flex items-center gap-2 text-xs text-[var(--ink)]/55">
+                  <input
+                    type="checkbox"
+                    checked={!!c.forNextProjects}
+                    disabled={pending}
+                    onChange={(e) =>
+                      patch({
+                        action: "toggle-next-tool",
+                        toolId: c.id,
+                        forNextProjects: e.target.checked,
+                      })
+                    }
+                  />
+                  Add to next projects toolbox
+                </label>
               </div>
               <div className="flex flex-wrap gap-2">
                 <a

@@ -7,15 +7,21 @@ import {
   type VrMode,
 } from "@/lib/venture/build-session";
 import { sessionAdvisorRecommendation } from "@/lib/venture/experts";
+import { recommendInfrastructure } from "@/lib/venture/infrastructure";
+import { curriculumForIndustry } from "@/lib/venture/curriculum";
+import { toolsForNextProjects, type ToolId } from "@/lib/venture/tools";
+import { planBotJobs } from "@/lib/venture/bots";
 import {
   getLaunchPack,
   getPreferences,
   getVenture,
   saveLaunchPack,
   savePreferences,
+  saveVenture,
   trackEvent,
 } from "@/lib/venture/store";
 import type { BrandIdentity } from "@/lib/venture/preferences";
+import { defaultPlugFeatures } from "@/lib/venture/build-session";
 
 type Ctx = { params: Promise<{ slug: string }> };
 
@@ -83,6 +89,8 @@ export async function PATCH(req: Request, ctx: Ctx) {
     enabled,
     colorKitId,
     vr,
+    toolId,
+    forNextProjects,
   } = body as {
     action?:
       | "connect"
@@ -92,7 +100,9 @@ export async function PATCH(req: Request, ctx: Ctx) {
       | "toggle-feature"
       | "set-color"
       | "set-vr"
-      | "refresh-advisor";
+      | "refresh-advisor"
+      | "refresh-tools"
+      | "toggle-next-tool";
     connectionId?: string;
     jobId?: string;
     govId?: string;
@@ -101,6 +111,8 @@ export async function PATCH(req: Request, ctx: Ctx) {
     enabled?: boolean;
     colorKitId?: string;
     vr?: Partial<VrMode>;
+    toolId?: ToolId;
+    forNextProjects?: boolean;
   };
 
   const session = (pack.buildSession || {}) as SessionShape;
@@ -185,6 +197,69 @@ export async function PATCH(req: Request, ctx: Ctx) {
     }
     pack.buildSession = session;
     trackEvent(venture.id, "vr_mode_updated", { ...session.vr });
+  }
+
+  if (action === "refresh-tools") {
+    const connected = new Set(
+      pack.connections.filter((c) => c.connected).map((c) => c.id),
+    );
+    const recommended = recommendInfrastructure(
+      pack.mvpSpec as Parameters<typeof recommendInfrastructure>[0],
+      venture.blueprint.industryId,
+      venture.idea,
+    );
+    pack.connections = recommended.map((c) => ({
+      ...c,
+      connected: connected.has(c.id),
+      connectedAt: pack.connections.find((x) => x.id === c.id)?.connectedAt,
+    }));
+    // queue bot jobs for newly recommended tools not already in jobs
+    const existingTasks = new Set(pack.botJobs.map((j) => j.task));
+    const extra = planBotJobs(venture.id, pack.mvpSpec as Parameters<typeof planBotJobs>[1], recommended)
+      .filter((j) => j.connectionId && !existingTasks.has(j.task) && !connected.has(j.connectionId));
+    pack.botJobs = [...pack.botJobs, ...extra];
+    if (!pack.curriculum) {
+      pack.curriculum =
+        curriculumForIndustry(venture.blueprint.industryId || "", venture.idea) || undefined;
+    }
+    // merge plug features for new modules; auto-enable learning stack for edtech
+    const moduleSet = new Set(venture.modules as string[]);
+    if (venture.blueprint.industryId === "edtech") {
+      for (const m of ["classes", "messaging", "video", "consent"] as const) {
+        if (!moduleSet.has(m)) {
+          moduleSet.add(m);
+          venture.modules = [...venture.modules, m];
+        }
+      }
+      saveVenture(venture);
+    }
+    if (session.features) {
+      const ids = new Set(session.features.map((f) => f.id));
+      for (const f of defaultPlugFeatures([...moduleSet])) {
+        if (!ids.has(f.id)) session.features.push(f);
+      }
+      const enable = new Set(["classes", "messaging", "video", "consent"]);
+      session.features = session.features.map((x) =>
+        enable.has(x.id) && moduleSet.has(x.id) ? { ...x, enabled: true } : x,
+      );
+      pack.buildSession = session;
+    }
+    pack.nextProjectTools = toolsForNextProjects(pack.connections);
+    trackEvent(venture.id, "tools_refreshed", {
+      count: pack.connections.length,
+      next: pack.nextProjectTools,
+    });
+  }
+
+  if (action === "toggle-next-tool" && toolId) {
+    pack.connections = pack.connections.map((c) =>
+      c.id === toolId ? { ...c, forNextProjects: !!forNextProjects } : c,
+    );
+    pack.nextProjectTools = toolsForNextProjects(pack.connections);
+    trackEvent(venture.id, "next_project_tool_toggled", {
+      toolId,
+      forNextProjects: !!forNextProjects,
+    });
   }
 
   if (action === "refresh-advisor" || !pack.sessionAdvisor) {

@@ -8,7 +8,11 @@ export type ModuleId =
   | "analytics"
   | "inventory"
   | "staff"
-  | "locations";
+  | "locations"
+  | "classes"
+  | "messaging"
+  | "video"
+  | "consent";
 
 export type VentureStage =
   | "idea"
@@ -223,9 +227,18 @@ export type LaunchPack = {
     connectUrl: string;
     docsHint: string;
     botTask: string;
+    category?: string;
+    forNextProjects?: boolean;
     connected?: boolean;
     connectedAt?: string;
   }[];
+  /** Tool IDs carried into the next venture on this machine */
+  nextProjectTools?: string[];
+  curriculum?: {
+    id: string;
+    title: string;
+    weeks: { week: number; title: string; outcome: string }[];
+  };
   experts: {
     id: string;
     name: string;

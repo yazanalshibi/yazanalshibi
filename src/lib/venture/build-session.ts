@@ -10,6 +10,10 @@ export type PlugFeatureId =
   | "reviews"
   | "ecommerce"
   | "analytics"
+  | "classes"
+  | "messaging"
+  | "video"
+  | "consent"
   | "vr_storefront";
 
 export type PlugFeature = {
@@ -105,6 +109,30 @@ export function defaultPlugFeatures(modules: string[]): PlugFeature[] {
     { id: "reviews", name: "Reviews", blurb: "Post-service asks", enabled: on.has("reviews") },
     { id: "ecommerce", name: "E-commerce", blurb: "Catalog + cart", enabled: on.has("ecommerce") },
     { id: "analytics", name: "Analytics", blurb: "Events + health", enabled: true },
+    {
+      id: "classes",
+      name: "Classes / curriculum",
+      blurb: "Lesson packs and cohort progress",
+      enabled: on.has("classes"),
+    },
+    {
+      id: "messaging",
+      name: "Parent / buyer messaging",
+      blurb: "Email + SMS reminders",
+      enabled: on.has("messaging"),
+    },
+    {
+      id: "video",
+      name: "Live video",
+      blurb: "Classroom or consult links on bookings",
+      enabled: on.has("video"),
+    },
+    {
+      id: "consent",
+      name: "Consent gate",
+      blurb: "Parental / policy consent before enroll",
+      enabled: on.has("consent"),
+    },
     {
       id: "vr_storefront",
       name: "VR storefront (Meta)",

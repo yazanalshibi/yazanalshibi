@@ -8,6 +8,8 @@ import { createVentureFromIdea } from "@/lib/venture/blueprint";
 import { collectGeoIndustryIntel } from "@/lib/venture/geo-intel";
 import { buildGovApplications, regionQuickLinks } from "@/lib/venture/session";
 import { COLOR_KITS, createBuildSession } from "@/lib/venture/build-session";
+import { curriculumForIndustry } from "@/lib/venture/curriculum";
+import { toolsForNextProjects } from "@/lib/venture/tools";
 import {
   getPreferences,
   listVentures,
@@ -34,7 +36,7 @@ export async function POST(req: Request) {
     String(answers.idea),
   );
   const govApplications = buildGovApplications(geoIntel);
-  const connections = recommendInfrastructure(spec);
+  const connections = recommendInfrastructure(spec, industry.id, String(answers.idea));
   const experts = matchExperts(spec, industry.id, 5);
   const sessionAdvisor = sessionAdvisorRecommendation(experts, new Date().toDateString());
 
@@ -53,6 +55,10 @@ export async function POST(req: Request) {
           "analytics",
           "staff",
           "locations",
+          "classes",
+          "messaging",
+          "video",
+          "consent",
         ].includes(m),
       ),
     ]),
@@ -82,7 +88,7 @@ export async function POST(req: Request) {
       : undefined;
   const buildSession = createBuildSession(
     venture.name,
-    spec.recommendedModules,
+    [...spec.recommendedModules, ...venture.modules],
     sessionAdvisor.tip,
     preferredKit,
   );
@@ -92,6 +98,8 @@ export async function POST(req: Request) {
   savePreferences(prefs);
 
   const botJobs = planBotJobs(venture.id, spec, connections);
+  const curriculum = curriculumForIndustry(industry.id, String(answers.idea));
+  const nextProjectTools = toolsForNextProjects(connections);
   const pack = saveLaunchPack({
     ventureId: venture.id,
     answers,
@@ -109,6 +117,8 @@ export async function POST(req: Request) {
       colorKits: COLOR_KITS,
     },
     sessionAdvisor,
+    curriculum: curriculum || undefined,
+    nextProjectTools,
     updatedAt: new Date().toISOString(),
   });
 

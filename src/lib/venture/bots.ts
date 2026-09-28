@@ -88,8 +88,14 @@ export function planBotJobs(
 
 export function advanceBotJob(job: BotJob, connected = false): BotJob {
   const updated = { ...job, updatedAt: new Date().toISOString(), log: [...job.log] };
-  if (job.task.startsWith("connect_") || job.task.startsWith("provision_")) {
-    if (!connected && job.status === "queued") {
+  if (
+    job.task.startsWith("connect_") ||
+    job.task.startsWith("provision_") ||
+    job.task.startsWith("setup_") ||
+    job.task.startsWith("enable_") ||
+    job.task.startsWith("ensure_")
+  ) {
+    if (!connected && job.status === "queued" && job.connectionId) {
       updated.status = "blocked";
       updated.log.push("! blocked — complete OAuth / DNS in Launchpad connections");
       return updated;
@@ -98,6 +104,15 @@ export function advanceBotJob(job: BotJob, connected = false): BotJob {
     updated.log.push("→ authorizing on Live Venture bot runner…");
     updated.status = "done";
     updated.log.push("✓ connection stored locally (keys never leave your workspace policy)");
+    if (job.task === "setup_parent_consent") {
+      updated.log.push("✓ parental consent gate + policy stub attached to enroll flow");
+    }
+    if (job.task === "connect_video") {
+      updated.log.push("✓ live classroom link template ready for booked sessions");
+    }
+    if (job.task === "connect_sms") {
+      updated.log.push("✓ parent SMS reminder templates queued (opt-in only)");
+    }
     return updated;
   }
   if (job.status === "queued") {

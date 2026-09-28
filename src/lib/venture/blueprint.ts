@@ -118,6 +118,9 @@ export function buildBlueprint(idea: string): VentureBlueprint {
     ...(detailing || kidsSchool
       ? (["membership", "reviews", "staff", "locations"] as ModuleId[])
       : []),
+    ...(kidsSchool
+      ? (["classes", "messaging", "video", "consent"] as ModuleId[])
+      : []),
   ];
 
   if (kidsSchool) {
