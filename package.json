@@ -1,0 +1,40 @@
+{
+  "name": "live-venture-os",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Live Venture OS — AI-native venture operating system (V0.1)",
+  "bin": {
+    "mvp-specialist": "./cli/run.mjs"
+  },
+  "scripts": {
+    "dev": "next dev",
+    "build": "node scripts/build.mjs",
+    "start": "next start",
+    "lint": "eslint",
+    "cli": "tsx cli/index.ts",
+    "preview": "OPENNEXT_CHILD=1 opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "deploy": "OPENNEXT_CHILD=1 opennextjs-cloudflare build && opennextjs-cloudflare deploy",
+    "upload": "OPENNEXT_CHILD=1 opennextjs-cloudflare build && opennextjs-cloudflare upload",
+    "cf-build": "OPENNEXT_CHILD=1 opennextjs-cloudflare build",
+    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
+    "test:smoke": "tsx cli/index.ts industries && tsx cli/index.ts plan --industry healthtech --idea \"AI hospital OS\" && tsx cli/index.ts train-export --out /tmp/mvp-train.jsonl && tsx cli/index.ts scaffold /tmp/mvp-smoke-app --template web-saas --industry healthtech --idea \"smoke test\""
+  },
+  "dependencies": {
+    "@opennextjs/cloudflare": "^1.20.6",
+    "next": "16.3.6",
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.3.6",
+    "tailwindcss": "^4",
+    "tsx": "^4.23.15",
+    "typescript": "^5",
+    "wrangler": "^4.142.0"
+  }
+}
